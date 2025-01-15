@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from datetime import datetime
 from app.db.base_class import Base
 
@@ -7,13 +6,12 @@ class Perfume(Base):
     __tablename__ = "perfumes"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)
-    brand_id = Column(Integer, ForeignKey("brands.id"))
-    brand_line = Column(String(100))
+    brand = Column(Text)
+    brand_line = Column(Text)
+    name = Column(Text)
     image_url = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relationships
-    brand = relationship("Brand", back_populates="perfumes")
-    notes = relationship("PerfumeNote", back_populates="perfume", cascade="all, delete-orphan") 
+    geurnoot = Column(Text)
+    topnoot = Column(Text)
+    hartnoot = Column(Text)
+    basisnoot = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow) 
