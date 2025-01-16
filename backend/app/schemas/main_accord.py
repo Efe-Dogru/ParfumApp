@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
 
-class NoteBase(BaseModel):
+class MainAccordBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
 
-class NoteCreate(NoteBase):
+class MainAccordCreate(MainAccordBase):
     pass
 
-class NoteResponse(NoteBase):
+class MainAccordResponse(MainAccordBase):
     id: int
 
     class Config:

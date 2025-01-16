@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
 
-class NoteBase(BaseModel):
+class OccasionBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
 
-class NoteCreate(NoteBase):
+class OccasionCreate(OccasionBase):
     pass
 
-class NoteResponse(NoteBase):
+class OccasionResponse(OccasionBase):
     id: int
 
     class Config:
