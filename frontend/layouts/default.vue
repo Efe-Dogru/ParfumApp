@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { Home, User, Briefcase, Search } from 'lucide-vue-next'
+import TubelightNavbar from '@/components/ui/TubelightNavbar.vue'
+import FooterSection from '@/components/ui/FooterSection.vue'
 
 interface Perfume {
   id: number
@@ -16,6 +19,13 @@ const searchResults = ref<Perfume[]>([])
 const isLoading = ref(false)
 
 const { searchPerfumes } = useApi()
+
+const navItems = [
+  { name: 'Home', url: '/', icon: Home },
+  { name: 'Browse', url: '/browse', icon: Briefcase },
+  { name: 'Search', url: '/search', icon: Search },
+  { name: 'About', url: '/about', icon: User }
+]
 
 const toggleDarkMode = () => {
   isDark.value = !isDark.value
@@ -79,132 +89,102 @@ onUnmounted(() => {
 
 <template>
   <div class="min-h-screen bg-background text-foreground">
-    <!-- Header -->
-    <header class="border-b">
-      <div class="container mx-auto px-4">
-        <div class="flex h-16 items-center">
-          <!-- Left: Logo -->
-          <div class="w-1/4">
-            <NuxtLink to="/" class="text-2xl font-bold">Parfum App</NuxtLink>
+    <!-- Header with TubelightNavbar -->
+    <div class="mb-16">
+      <TubelightNavbar :items="navItems">
+        <!-- Search Bar -->
+        <div class="relative search-container mx-4">
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Search perfumes..."
+              v-model="searchQuery"
+              @input="handleSearch"
+              class="w-64 px-4 py-2 rounded-lg bg-background border border-input focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div v-if="isLoading" class="absolute right-3 top-2.5">
+              <div class="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+            </div>
           </div>
           
-          <!-- Middle: Navigation -->
-          <nav class="flex-1 flex items-center justify-center space-x-8">
-            <NuxtLink
-              to="/"
-              class="text-sm font-medium hover:text-primary"
-            >
-              Home
-            </NuxtLink>
-            <NuxtLink
-              to="/browse"
-              class="text-sm font-medium hover:text-primary"
-            >
-              Browse
-            </NuxtLink>
-            <NuxtLink
-              to="/about"
-              class="text-sm font-medium hover:text-primary"
-            >
-              About Us
-            </NuxtLink>
-          </nav>
-
-          <!-- Right: Search and Dark Mode -->
-          <div class="w-1/4 flex items-center justify-end space-x-4">
-            <div class="relative search-container">
-              <input
-                v-model="searchQuery"
-                @input="handleSearch"
-                type="search"
-                placeholder="Search..."
-                class="w-64 px-4 py-2 rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              
-              <!-- Search Dropdown -->
-              <div v-if="isSearchOpen" class="absolute top-full left-0 w-[500px] mt-2 bg-background border border-border rounded-lg shadow-lg z-50">
-                <!-- Loading State -->
-                <div v-if="isLoading" class="p-4 text-center text-muted-foreground">
-                  Loading...
+          <!-- Search Results Dropdown -->
+          <div
+            v-if="isSearchOpen && searchResults.length > 0"
+            class="absolute z-50 w-full mt-2 bg-background border border-input rounded-lg shadow-lg"
+          >
+            <div class="max-h-96 overflow-y-auto">
+              <NuxtLink
+                v-for="result in searchResults"
+                :key="result.id"
+                :to="'/perfume/' + result.id"
+                class="block px-4 py-2 hover:bg-accent cursor-pointer"
+                @click="isSearchOpen = false"
+              >
+                <div class="flex items-center space-x-3">
+                  <img
+                    v-if="result.image_url"
+                    :src="result.image_url"
+                    :alt="result.name"
+                    class="w-10 h-10 object-cover rounded"
+                  />
+                  <div>
+                    <div class="font-medium">{{ result.name }}</div>
+                    <div class="text-sm text-muted-foreground">{{ result.brand }} ({{ result.year }})</div>
+                  </div>
                 </div>
-
-                <!-- No Results -->
-                <div v-else-if="searchResults.length === 0 && searchQuery" class="p-4 text-center text-muted-foreground">
-                  No results found for "{{ searchQuery }}"
-                </div>
-
-                <!-- Search Results -->
-                <div v-else class="max-h-[400px] overflow-y-auto">
-                  <NuxtLink
-                    v-for="result in searchResults"
-                    :key="result.id"
-                    :to="`/perfume/${result.id}`"
-                    class="flex items-center space-x-4 p-4 hover:bg-accent cursor-pointer border-b border-border last:border-b-0"
-                  >
-                    <div class="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden">
-                      <img 
-                        :src="result.image_url" 
-                        :alt="result.name"
-                        class="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <h3 class="font-medium">{{ result.name }}</h3>
-                      <div class="text-sm text-muted-foreground">
-                        {{ result.brand }} · {{ result.year }}
-                      </div>
-                    </div>
-                  </NuxtLink>
-                </div>
-              </div>
+              </NuxtLink>
             </div>
-            
-            <button
-              @click="toggleDarkMode"
-              class="rounded-full p-2 hover:bg-accent"
-              :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-            >
-              <!-- Sun icon for light mode -->
-              <svg
-                v-if="isDark"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-6 h-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                />
-              </svg>
-              <!-- Moon icon for dark mode -->
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-6 h-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
-                />
-              </svg>
-            </button>
           </div>
         </div>
-      </div>
-    </header>
+      </TubelightNavbar>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <button
+      @click="toggleDarkMode"
+      class="fixed top-4 right-4 rounded-full p-2 hover:bg-accent z-50"
+      :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    >
+      <!-- Sun icon for light mode -->
+      <svg
+        v-if="isDark"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+        />
+      </svg>
+      <!-- Moon icon for dark mode -->
+      <svg
+        v-else
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+        />
+      </svg>
+    </button>
 
     <!-- Main content -->
-    <main>
+    <main class="container mx-auto px-4 pt-8">
       <slot />
     </main>
+
+    <!-- Footer -->
+    <FooterSection />
   </div>
 </template> 

@@ -27,6 +27,8 @@
     "@vueuse/core": "^10.7.0",
     "@vueuse/nuxt": "^10.7.0",
     "axios": "^1.7.9",
+    "framer-motion": "^11.18.1",
+    "lucide-vue-next": "^0.473.0",
     "pinia": "^2.1.7",
     "radix-vue": "^1.2.4",
     "shadcn-vue": "^0.1.0"

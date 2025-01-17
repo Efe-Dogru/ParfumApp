@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto px-4 py-12">
-    <div class="max-w-3xl mx-auto">
+    <div class="mx-auto">
       <h1 class="text-4xl font-bold mb-8">About Parfum App</h1>
       
       <div class="space-y-8">
