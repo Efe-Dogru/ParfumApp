@@ -44,7 +44,6 @@ async def get_perfumes(
         search_filter = or_(
             Perfume.name.ilike(f"%{search}%"),
             Perfume.brand.ilike(f"%{search}%"),
-            Perfume.description.ilike(f"%{search}%")
         )
         query = query.filter(search_filter)
     

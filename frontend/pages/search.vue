@@ -30,7 +30,7 @@ const handleSearch = () => {
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div class="space-y-8 mt-6">
     <div class="flex flex-col items-center text-center">
       <h1 class="text-3xl font-bold tracking-tight">Search Perfumes</h1>
       <p class="mt-4 text-lg text-muted-foreground">

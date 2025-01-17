@@ -1,17 +1,48 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 
+interface Note {
+  id: number
+  name: string
+}
+
+interface MainAccord {
+  id: number
+  name: string
+}
+
+interface Occasion {
+  id: number
+  name: string
+}
+
+interface Season {
+  id: number
+  name: string
+}
+
 export interface Perfume {
-  id: number | string
+  id: number
   name: string
   description: string
   brand?: string
-  year?: number
-  notes?: {
-    top: string[]
-    heart: string[]
-    base: string[]
-  }
+  price?: number
+  type?: string
+  gender?: string
+  family?: string
+  release_year?: number
+  concentration?: string
+  longevity?: string
+  sillage?: string
+  image_url?: string
+  perfumer?: string
+  inspiration?: string
+  top_notes?: Note[]
+  middle_notes?: Note[]
+  base_notes?: Note[]
+  main_accords?: MainAccord[]
+  occasions?: Occasion[]
+  seasons?: Season[]
 }
 
 export const useCommon = () => {

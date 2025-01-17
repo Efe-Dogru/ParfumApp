@@ -1,100 +1,195 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { Ref } from 'vue'
+import { useApi } from '~/composables/useApi'
 import type { Perfume } from '~/composables/useCommon'
 
 const route = useRoute()
-const perfumeId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+const { getPerfumeById } = useApi()
 
-// Placeholder for perfume data fetching
-const perfume: Ref<Perfume> = ref({
-  id: perfumeId,
-  name: 'Sample Perfume',
-  description: 'A delightful fragrance that combines floral and woody notes.',
-  brand: 'Luxury Brand',
-  year: 2023,
-  notes: {
-    top: ['Bergamot', 'Lemon', 'Orange'],
-    heart: ['Rose', 'Jasmine', 'Lavender'],
-    base: ['Vanilla', 'Musk', 'Sandalwood']
+const perfume = ref<Perfume | null>(null)
+const loading = ref(true)
+const error = ref<string | null>(null)
+
+onMounted(async () => {
+  try {
+    const response = await getPerfumeById(route.params.id as string)
+    perfume.value = response.data
+  } catch (err) {
+    error.value = 'Failed to load perfume details'
+    console.error('Error fetching perfume:', err)
+  } finally {
+    loading.value = false
   }
-})
-
-useHead({
-  title: `${perfume.value.name} - Parfum App`,
-  meta: [
-    { name: 'description', content: perfume.value.description }
-  ]
 })
 </script>
 
 <template>
-  <div class="space-y-8">
-    <div class="flex items-center space-x-4">
-      <NuxtLink
-        to="/browse"
-        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-      >
-        Back to Browse
-      </NuxtLink>
+  <div class="container mx-auto px-4 py-8">
+    <div v-if="loading" class="flex justify-center items-center py-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-2">
-      <div class="space-y-4">
-        <h1 class="text-3xl font-bold">{{ perfume.name }}</h1>
-        <p class="text-lg text-muted-foreground">{{ perfume.description }}</p>
-        
-        <div class="space-y-2">
-          <p><strong>Brand:</strong> {{ perfume.brand }}</p>
-          <p><strong>Year:</strong> {{ perfume.year }}</p>
+    <div v-else-if="error" class="flex justify-center items-center py-8">
+      <div class="text-red-500">{{ error }}</div>
+    </div>
+
+    <div v-else-if="perfume" class="max-w-4xl mx-auto">
+      <div class="flex justify-between items-start mb-8">
+        <div>
+          <h1 class="text-4xl font-bold mb-2">{{ perfume.name }}</h1>
+          <p class="text-xl text-muted-foreground">{{ perfume.brand }}</p>
+          <p v-if="perfume.perfumer" class="text-sm text-muted-foreground mt-1">By {{ perfume.perfumer }}</p>
         </div>
       </div>
 
-      <div class="space-y-6">
-        <div class="rounded-lg border p-6">
-          <h2 class="text-xl font-semibold mb-4">Fragrance Notes</h2>
-          
-          <div class="space-y-4">
-            <div>
-              <h3 class="font-medium mb-2">Top Notes</h3>
+      <div class="grid gap-8 md:grid-cols-2">
+        <div class="space-y-6">
+          <!-- Left Column -->
+          <div class="aspect-square rounded-lg overflow-hidden">
+            <img 
+              src="assets/images/perfume-placeholder.jpg" 
+              :alt="perfume.name" 
+              class="w-full h-full object-cover" 
+            />
+          </div>
+
+          <div>
+            <h2 class="text-2xl font-semibold mb-4">Description</h2>
+            <p class="text-muted-foreground">{{ perfume.description }}</p>
+          </div>
+
+          <div v-if="perfume.inspiration" class="border-t pt-4">
+            <h2 class="text-xl font-semibold mb-2">Inspiration</h2>
+            <p class="text-muted-foreground">{{ perfume.inspiration }}</p>
+          </div>
+
+          <div class="border-t pt-4">
+            <h2 class="text-xl font-semibold mb-4">Details</h2>
+            <div class="grid grid-cols-2 gap-4">
+              <div v-if="perfume.type">
+                <p class="font-medium">Type</p>
+                <p class="text-muted-foreground">{{ perfume.type }}</p>
+              </div>
+              <div v-if="perfume.gender">
+                <p class="font-medium">Gender</p>
+                <p class="text-muted-foreground">{{ perfume.gender }}</p>
+              </div>
+              <div v-if="perfume.family">
+                <p class="font-medium">Family</p>
+                <p class="text-muted-foreground">{{ perfume.family }}</p>
+              </div>
+              <div v-if="perfume.concentration">
+                <p class="font-medium">Concentration</p>
+                <p class="text-muted-foreground">{{ perfume.concentration }}</p>
+              </div>
+              <div v-if="perfume.release_year">
+                <p class="font-medium">Release Year</p>
+                <p class="text-muted-foreground">{{ perfume.release_year }}</p>
+              </div>
+              <div v-if="perfume.longevity">
+                <p class="font-medium">Longevity</p>
+                <p class="text-muted-foreground">{{ perfume.longevity }}</p>
+              </div>
+              <div v-if="perfume.sillage">
+                <p class="font-medium">Sillage</p>
+                <p class="text-muted-foreground">{{ perfume.sillage }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Right Column -->
+          <div v-if="perfume.main_accords?.length" class="border-b pb-6">
+            <h2 class="text-2xl font-semibold mb-4">Main Accords</h2>
+            <div class="flex flex-wrap gap-2">
+              <span 
+                v-for="accord in perfume.main_accords" 
+                :key="accord.id"
+                class="px-3 py-1 rounded-full bg-primary/10 text-primary"
+              >
+                {{ accord.name }}
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div v-if="perfume.top_notes?.length">
+              <h2 class="text-xl font-semibold mb-2">Top Notes</h2>
               <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="note in perfume.notes?.top"
-                  :key="note"
-                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                <span 
+                  v-for="note in perfume.top_notes" 
+                  :key="note.id"
+                  class="px-3 py-1 rounded-full bg-primary/10 text-primary"
                 >
-                  {{ note }}
+                  {{ note.name }}
                 </span>
               </div>
             </div>
 
-            <div>
-              <h3 class="font-medium mb-2">Heart Notes</h3>
+            <div v-if="perfume.middle_notes?.length">
+              <h2 class="text-xl font-semibold mb-2">Middle Notes</h2>
               <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="note in perfume.notes?.heart"
-                  :key="note"
-                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                <span 
+                  v-for="note in perfume.middle_notes" 
+                  :key="note.id"
+                  class="px-3 py-1 rounded-full bg-primary/10 text-primary"
                 >
-                  {{ note }}
+                  {{ note.name }}
                 </span>
               </div>
             </div>
 
-            <div>
-              <h3 class="font-medium mb-2">Base Notes</h3>
+            <div v-if="perfume.base_notes?.length">
+              <h2 class="text-xl font-semibold mb-2">Base Notes</h2>
               <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="note in perfume.notes?.base"
-                  :key="note"
-                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:focus-offset-2"
+                <span 
+                  v-for="note in perfume.base_notes" 
+                  :key="note.id"
+                  class="px-3 py-1 rounded-full bg-primary/10 text-primary"
                 >
-                  {{ note }}
+                  {{ note.name }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-6 border-t pt-6">
+            <div v-if="perfume.occasions?.length">
+              <h2 class="text-xl font-semibold mb-2">Best For</h2>
+              <div class="flex flex-wrap gap-2">
+                <span 
+                  v-for="occasion in perfume.occasions" 
+                  :key="occasion.id"
+                  class="px-3 py-1 rounded-full bg-accent text-accent-foreground"
+                >
+                  {{ occasion.name }}
+                </span>
+              </div>
+            </div>
+
+            <div v-if="perfume.seasons?.length">
+              <h2 class="text-xl font-semibold mb-2">Ideal Seasons</h2>
+              <div class="flex flex-wrap gap-2">
+                <span 
+                  v-for="season in perfume.seasons" 
+                  :key="season.id"
+                  class="px-3 py-1 rounded-full bg-accent text-accent-foreground"
+                >
+                  {{ season.name }}
                 </span>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="mt-8">
+        <NuxtLink 
+          to="/browse"
+          class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+        >
+          Back to Browse
+        </NuxtLink>
       </div>
     </div>
   </div>
