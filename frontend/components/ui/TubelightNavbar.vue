@@ -1,6 +1,6 @@
 <!-- components/NavBar.vue -->
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import type { LucideIcon } from 'lucide-vue-next'
 
@@ -13,10 +13,46 @@ interface NavItem {
 interface Props {
   items: NavItem[]
   className?: string
+  isIndexPage: boolean
 }
 
 const props = defineProps<Props>()
 const route = useRoute()
+const isScrolled = ref(false)
+const isMobile = ref(false)
+
+// Check if we're in browser environment
+const isBrowser = typeof window !== 'undefined'
+
+// Define handleScroll first
+const handleScroll = () => {
+  if (!isBrowser) return
+  if (props.isIndexPage) {
+    isScrolled.value = window.scrollY > 20
+  }
+}
+
+const handleResize = () => {
+  if (!isBrowser) return
+  isMobile.value = window.innerWidth < 768
+}
+
+// Then use it in the watcher
+watch(
+  () => route.path,
+  () => {
+    if (!isBrowser) return
+    
+    if (!props.isIndexPage) {
+      isScrolled.value = false
+      window.removeEventListener('scroll', handleScroll)
+    } else {
+      handleScroll()
+      window.addEventListener('scroll', handleScroll)
+    }
+  },
+  { immediate: true }
+)
 
 // Compute active tab based on current route
 const activeTab = computed(() => {
@@ -25,62 +61,123 @@ const activeTab = computed(() => {
   return activeItem ? activeItem.name : props.items[0].name
 })
 
-const isMobile = ref(false)
-
-const handleResize = () => {
-  isMobile.value = window.innerWidth < 768
-}
-
 onMounted(() => {
+  if (!isBrowser) return
+  
   handleResize()
   window.addEventListener('resize', handleResize)
+  
+  if (props.isIndexPage) {
+    handleScroll()
+    window.addEventListener('scroll', handleScroll)
+  }
 })
 
 onUnmounted(() => {
+  if (!isBrowser) return
+  
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
 <template>
-  <div
+  <nav
     :class="[
-      'fixed sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6',
-      className
+      'fixed top-0 left-0 right-0 z-50',
+      props.isIndexPage
+        ? isScrolled
+          ? 'bg-background/95 border-b border-border backdrop-blur shadow-sm'
+          : 'bg-transparent'
+        : 'bg-background border-b border-border'
     ]"
   >
-    <div class="flex items-center gap-3 bg-background/5 border border-border backdrop-blur-lg rounded-full shadow-lg p-3">
-      <NuxtLink
-        v-for="item in items"
-        :key="item.name"
-        :to="item.url"
-        :class="[
-          'relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-all duration-300',
-          'text-foreground/80 hover:text-primary',
-          { 'bg-muted text-primary': activeTab === item.name }
-        ]"
-      >
-        <span class="hidden md:inline">{{ item.name }}</span>
-        <span class="md:hidden">
-          <component :is="item.icon" :size="18" :stroke-width="2.5" />
-        </span>
-        
-        <!-- Remove transition wrapper and simplify the active indicator -->
-        <div
-          v-show="activeTab === item.name"
-          class="absolute inset-0 w-full bg-primary/5 rounded-full -z-10 transition-opacity duration-300"
-        >
-          <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-t-full transition-all duration-300">
-            <div class="absolute w-12 h-6 bg-primary/20 rounded-full blur-md -top-2 -left-2" />
-            <div class="absolute w-8 h-6 bg-primary/20 rounded-full blur-md -top-1" />
-            <div class="absolute w-4 h-4 bg-primary/20 rounded-full blur-sm top-0 left-2" />
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <NuxtLink to="/" class="flex items-center space-x-2">
+          <span class="text-xl font-bold text-primary">Parfum</span>
+        </NuxtLink>
+
+        <!-- Navigation Links -->
+        <div class="hidden md:flex items-center space-x-1">
+          <NuxtLink
+            v-for="item in items"
+            :key="item.name"
+            :to="item.url"
+            :class="[
+              'px-4 py-2 rounded-md text-sm font-medium',
+              activeTab === item.name
+                ? 'text-primary'
+                : 'text-foreground/80 hover:text-primary hover:bg-muted/50'
+            ]"
+          >
+            {{ item.name }}
+          </NuxtLink>
+        </div>
+
+        <!-- Right Side Buttons -->
+        <div class="flex items-center">
+          <!-- Search slot -->
+          <div class="mr-6">
+            <slot></slot>
+          </div>
+
+          <!-- Theme toggle button -->
+          <div class="flex items-center justify-center w-9 h-9">
+            <slot name="theme-toggle"></slot>
           </div>
         </div>
-      </NuxtLink>
 
-      <!-- Add slot for additional content like search bar -->
-      <slot></slot>
+        <!-- Mobile Menu Button -->
+        <button
+          class="md:hidden inline-flex items-center justify-center rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 w-9"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="4" x2="20" y1="12" y2="12" />
+            <line x1="4" x2="20" y1="6" y2="6" />
+            <line x1="4" x2="20" y1="18" y2="18" />
+          </svg>
+        </button>
+      </div>
     </div>
-  </div>
+
+    <!-- Mobile Menu (Hidden by default) -->
+    <div
+      v-if="isMobile"
+      class="md:hidden"
+      :class="[props.isIndexPage && isScrolled ? 'border-b border-border' : '']"
+    >
+      <div class="px-2 pt-2 pb-3 space-y-1">
+        <NuxtLink
+          v-for="item in items"
+          :key="item.name"
+          :to="item.url"
+          :class="[
+            'block px-3 py-2 rounded-md text-base font-medium',
+            activeTab === item.name
+              ? 'text-primary bg-primary/5'
+              : 'text-foreground/80 hover:text-primary hover:bg-muted/50'
+          ]"
+        >
+          <span class="flex items-center space-x-2">
+            <component :is="item.icon" :size="18" :stroke-width="2" />
+            <span>{{ item.name }}</span>
+          </span>
+        </NuxtLink>
+      </div>
+    </div>
+  </nav>
 </template>
 
 <style scoped>

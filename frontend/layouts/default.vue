@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Home, User, Briefcase, Search } from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
 import TubelightNavbar from '@/components/ui/TubelightNavbar.vue'
 import FooterSection from '@/components/ui/FooterSection.vue'
+
+const route = useRoute()
+const isIndexPage = computed(() => {
+  const isIndex = route.path === '/' || route.path === ''
+  return isIndex
+})
 
 interface Perfume {
   id: number
@@ -91,7 +98,7 @@ onUnmounted(() => {
   <div class="min-h-screen bg-background text-foreground">
     <!-- Header with TubelightNavbar -->
     <div class="mb-16">
-      <TubelightNavbar :items="navItems">
+      <TubelightNavbar :items="navItems" :is-index-page="isIndexPage">
         <!-- Search Bar -->
         <div class="relative search-container mx-4">
           <div class="relative">
