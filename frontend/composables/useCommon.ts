@@ -30,6 +30,7 @@ export interface Perfume {
   type?: string
   gender?: string
   family?: string
+  year?: string // ???
   release_year?: number
   concentration?: string
   longevity?: string

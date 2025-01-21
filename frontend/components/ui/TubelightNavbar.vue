@@ -96,7 +96,7 @@ onUnmounted(() => {
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
         <NuxtLink to="/" class="flex items-center space-x-2">
-          <span class="text-xl font-bold text-primary">Parfum</span>
+          <span class="text-xl font-bold !text-[#4A154B] dark:!text-white">Parfum</span>
         </NuxtLink>
 
         <!-- Navigation Links -->
@@ -106,10 +106,10 @@ onUnmounted(() => {
             :key="item.name"
             :to="item.url"
             :class="[
-              'px-4 py-2 rounded-md text-sm font-medium',
+              'px-4 py-2 rounded-md text-sm font-medium relative after:transition-all after:duration-300 after:ease-in-out',
               activeTab === item.name
-                ? 'text-primary'
-                : 'text-foreground/80 hover:text-primary hover:bg-muted/50'
+                ? '!text-[#4A154B] dark:!text-white after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#4A154B] dark:after:bg-white after:transform after:scale-x-100'
+                : 'text-foreground/80 hover:!text-[#4A154B] dark:hover:!text-white hover:bg-muted/50 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#4A154B] dark:after:bg-white after:transform after:scale-x-0'
             ]"
           >
             {{ item.name }}
@@ -164,10 +164,10 @@ onUnmounted(() => {
           :key="item.name"
           :to="item.url"
           :class="[
-            'block px-3 py-2 rounded-md text-base font-medium',
+            'block px-3 py-2 rounded-md text-base font-medium relative after:transition-all after:duration-300 after:ease-in-out',
             activeTab === item.name
-              ? 'text-primary bg-primary/5'
-              : 'text-foreground/80 hover:text-primary hover:bg-muted/50'
+              ? '!text-[#4A154B] dark:!text-white bg-primary/5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#4A154B] dark:after:bg-white after:transform after:scale-x-100'
+              : 'text-foreground/80 hover:!text-[#4A154B] dark:hover:!text-white hover:bg-muted/50 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#4A154B] dark:after:bg-white after:transform after:scale-x-0'
           ]"
         >
           <span class="flex items-center space-x-2">

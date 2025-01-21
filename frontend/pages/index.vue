@@ -311,9 +311,9 @@ onUnmounted(() => {
   height: 1000px;
   background: radial-gradient(
     circle at center,
-    rgba(147, 112, 219, 0.2) 0%,
-    rgba(230, 230, 250, 0.15) 40%,
-    rgba(255, 192, 203, 0.1) 60%,
+    rgba(147, 112, 219, 0.35) 0%,
+    rgba(230, 230, 250, 0.25) 40%,
+    rgba(255, 192, 203, 0.2) 60%,
     transparent 80%
   );
   border-radius: 50%;
@@ -327,9 +327,9 @@ onUnmounted(() => {
 :root.dark .mouse-follower {
   background: radial-gradient(
     circle at center,
-    rgba(74, 56, 110, 0.2) 0%,
-    rgba(44, 44, 84, 0.15) 40%,
-    rgba(84, 35, 45, 0.1) 60%,
+    rgba(74, 56, 110, 0.35) 0%,
+    rgba(44, 44, 84, 0.35) 60%,
+    rgba(84, 35, 45, 0.2) 60%,
     transparent 80%
   );
 }

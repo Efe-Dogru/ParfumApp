@@ -4,6 +4,7 @@ import { Home, User, Briefcase, Search } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
 import TubelightNavbar from '@/components/ui/TubelightNavbar.vue'
 import FooterSection from '@/components/ui/FooterSection.vue'
+import SearchInput from '@/components/ui/SearchInput.vue'
 
 const route = useRoute()
 const isIndexPage = computed(() => {
@@ -19,7 +20,7 @@ interface Perfume {
   image_url: string
 }
 
-const isDark = ref(false)
+const { isDark, toggleDarkMode, initTheme } = useTheme()
 const searchQuery = ref('')
 const isSearchOpen = ref(false)
 const searchResults = ref<Perfume[]>([])
@@ -33,12 +34,6 @@ const navItems = [
   { name: 'Search', url: '/search', icon: Search },
   { name: 'About', url: '/about', icon: User }
 ]
-
-const toggleDarkMode = () => {
-  isDark.value = !isDark.value
-  document.documentElement.classList.toggle('dark')
-  localStorage.setItem('darkMode', isDark.value ? 'dark' : 'light')
-}
 
 const fetchSearchResults = async (query: string) => {
   if (!query) {
@@ -72,6 +67,7 @@ const handleSearch = (event: Event) => {
 }
 
 onMounted(() => {
+  initTheme()
   // Check for saved dark mode preference
   const savedMode = localStorage.getItem('darkMode')
   isDark.value = savedMode === 'dark'
@@ -99,50 +95,7 @@ onUnmounted(() => {
     <!-- Header with TubelightNavbar -->
     <div class="mb-16">
       <TubelightNavbar :items="navItems" :is-index-page="isIndexPage">
-        <!-- Search Bar -->
-        <div class="relative search-container mx-4">
-          <div class="relative">
-            <input
-              type="text"
-              placeholder="Search perfumes..."
-              v-model="searchQuery"
-              @input="handleSearch"
-              class="w-64 px-4 py-2 rounded-lg bg-background border border-input focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <div v-if="isLoading" class="absolute right-3 top-2.5">
-              <div class="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
-            </div>
-          </div>
-          
-          <!-- Search Results Dropdown -->
-          <div
-            v-if="isSearchOpen && searchResults.length > 0"
-            class="absolute z-50 w-full mt-2 bg-background border border-input rounded-lg shadow-lg"
-          >
-            <div class="max-h-96 overflow-y-auto">
-              <NuxtLink
-                v-for="result in searchResults"
-                :key="result.id"
-                :to="'/perfume/' + result.id"
-                class="block px-4 py-2 hover:bg-accent cursor-pointer"
-                @click="isSearchOpen = false"
-              >
-                <div class="flex items-center space-x-3">
-                  <img
-                    v-if="result.image_url"
-                    :src="result.image_url"
-                    :alt="result.name"
-                    class="w-10 h-10 object-cover rounded"
-                  />
-                  <div>
-                    <div class="font-medium">{{ result.name }}</div>
-                    <div class="text-sm text-muted-foreground">{{ result.brand }} ({{ result.year }})</div>
-                  </div>
-                </div>
-              </NuxtLink>
-            </div>
-          </div>
-        </div>
+        <SearchInput v-model="searchQuery" placeholder="Search perfumes..." />
       </TubelightNavbar>
     </div>
 
