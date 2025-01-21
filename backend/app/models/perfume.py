@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Table, ARRAY, JSON
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -7,21 +7,21 @@ perfume_top_notes = Table(
     'perfume_top_notes',
     Base.metadata,
     Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
-    Column('note_id', Integer, ForeignKey('notes.id'), primary_key=True)
+    Column('note_id', Integer, ForeignKey('top_notes.id'), primary_key=True)
 )
 
 perfume_middle_notes = Table(
     'perfume_middle_notes',
     Base.metadata,
     Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
-    Column('note_id', Integer, ForeignKey('notes.id'), primary_key=True)
+    Column('note_id', Integer, ForeignKey('middle_notes.id'), primary_key=True)
 )
 
 perfume_base_notes = Table(
     'perfume_base_notes',
     Base.metadata,
     Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
-    Column('note_id', Integer, ForeignKey('notes.id'), primary_key=True)
+    Column('note_id', Integer, ForeignKey('base_notes.id'), primary_key=True)
 )
 
 perfume_main_accords = Table(
@@ -31,42 +31,36 @@ perfume_main_accords = Table(
     Column('accord_id', Integer, ForeignKey('main_accords.id'), primary_key=True)
 )
 
-perfume_occasions = Table(
-    'perfume_occasions',
-    Base.metadata,
-    Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
-    Column('occasion_id', Integer, ForeignKey('occasions.id'), primary_key=True)
-)
-
-perfume_seasons = Table(
-    'perfume_seasons',
-    Base.metadata,
-    Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
-    Column('season_id', Integer, ForeignKey('seasons.id'), primary_key=True)
-)
-
 class Perfume(Base):
     __tablename__ = "perfumes"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    brand = Column(String(255), nullable=False)
-    type = Column(String(50))
+    brand_id = Column(Integer, ForeignKey('brands.id'))
+    concentration_id = Column(Integer, ForeignKey('concentration.id'))
+    local_image_path = Column(String(255))
     gender = Column(String(50))
-    family = Column(String(100))
+    type_id = Column(Integer, ForeignKey('type.id'))
+    family_id = Column(Integer, ForeignKey('family.id'))
     release_year = Column(Integer)
-    concentration = Column(String(50))
+    country_id = Column(Integer, ForeignKey('country.id'))
     description = Column(Text)
-    longevity = Column(String(50))
-    sillage = Column(String(50))
-    image_url = Column(Text)
-    perfumer = Column(String(255))
+    longevity = Column(String(255))
+    sillage = Column(String(255))
+    occasion = Column(ARRAY(String))
+    season = Column(ARRAY(String))
+    perfumer_id = Column(Integer, ForeignKey('perfumer.id'))
     inspiration = Column(Text)
+    istrend = Column(JSON)
 
     # Relationships
-    top_notes = relationship("Note", secondary=perfume_top_notes, backref="perfumes_as_top")
-    middle_notes = relationship("Note", secondary=perfume_middle_notes, backref="perfumes_as_middle")
-    base_notes = relationship("Note", secondary=perfume_base_notes, backref="perfumes_as_base")
-    main_accords = relationship("MainAccord", secondary=perfume_main_accords, backref="perfumes")
-    occasions = relationship("Occasion", secondary=perfume_occasions, backref="perfumes")
-    seasons = relationship("Season", secondary=perfume_seasons, backref="perfumes") 
+    brand = relationship("Brand")
+    concentration = relationship("Concentration")
+    type = relationship("Type")
+    family = relationship("Family")
+    country = relationship("Country")
+    perfumer = relationship("Perfumer")
+    top_notes = relationship("TopNote", secondary=perfume_top_notes)
+    middle_notes = relationship("MiddleNote", secondary=perfume_middle_notes)
+    base_notes = relationship("BaseNote", secondary=perfume_base_notes)
+    main_accords = relationship("MainAccord", secondary=perfume_main_accords) 

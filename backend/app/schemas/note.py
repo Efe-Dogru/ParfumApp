@@ -1,13 +1,23 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 class NoteBase(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
+    name: str
 
 class NoteCreate(NoteBase):
     pass
 
-class NoteResponse(NoteBase):
+class Note(NoteBase):
     id: int
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+# Specific note types using the same base structure
+class TopNote(Note):
+    pass
+
+class MiddleNote(Note):
+    pass
+
+class BaseNote(Note):
+    pass 
