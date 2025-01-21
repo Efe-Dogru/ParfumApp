@@ -97,14 +97,14 @@ onUnmounted(() => {
         >
           <div class="flex items-center space-x-3">
             <img
-              v-if="result.image_url"
-              :src="result.image_url"
+              v-if="result.local_image_path"
+              :src="`http://127.0.0.1:8000/static/${result.local_image_path?.replace('\\', '/')}`"                         
               :alt="result.name"
               class="w-10 h-10 object-cover rounded"
             />
             <div>
               <div class="font-medium">{{ result.name }}</div>
-              <div class="text-sm text-muted-foreground">{{ result.brand }} ({{ result.year }})</div>
+              <!-- <div class="text-sm text-muted-foreground">{{ result.brand }} ({{ result.year }})</div> -->
             </div>
           </div>
         </NuxtLink>

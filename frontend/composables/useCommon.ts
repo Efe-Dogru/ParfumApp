@@ -49,8 +49,6 @@ export interface Perfume {
   concentration_id: number
   local_image_path?: string
   gender?: string
-
-  family?: string
   year?: string // ???
 
   type_id: number
