@@ -62,16 +62,26 @@
   }
   body {
     @apply bg-background text-foreground;
-    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
   }
 }
 
-/* Add transition for any element that uses theme colors */
+/* Theme transition styles */
 @layer utilities {
   * {
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-property: color, background-color, border-color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
+    transition-duration: 50ms;
   }
+}
+
+/* Theme transition styles for specific elements that need longer transitions */
+.background-animation,
+.luxury-overlay,
+.perfume-bottle,
+.mist-particle,
+.mouse-follower,
+.sparkle {
+  transition-property: background, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-duration: 200ms;
 }
 </style> 

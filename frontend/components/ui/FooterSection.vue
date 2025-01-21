@@ -1,25 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Facebook, Instagram, Linkedin, Moon, Send, Sun, Twitter } from 'lucide-vue-next'
+import { useTheme } from '~/composables/useTheme'
 
-const isDarkMode = ref(true)
+const { isDark, toggleDarkMode, initTheme } = useTheme()
 
 onMounted(() => {
-  if (isDarkMode.value) {
-    document.documentElement.classList.add("dark")
-  } else {
-    document.documentElement.classList.remove("dark")
-  }
+  initTheme()
 })
-
-const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value
-  if (isDarkMode.value) {
-    document.documentElement.classList.add("dark")
-  } else {
-    document.documentElement.classList.remove("dark")
-  }
-}
 </script>
 
 <template>
@@ -39,27 +27,27 @@ const toggleDarkMode = () => {
             />
             <button
               type="submit"
-              class="absolute right-1 top-1 h-8 w-8 rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105 inline-flex items-center justify-center"
+              class="absolute right-1 top-1 h-8 w-8 rounded-full bg-[#4A154B] text-white transition-transform hover:scale-105 inline-flex items-center justify-center"
             >
               <Send class="h-4 w-4" />
               <span class="sr-only">Subscribe</span>
             </button>
           </form>
-          <div class="absolute -right-4 top-0 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+          <div class="absolute -right-4 top-0 h-24 w-24 rounded-full bg-[#4A154B]/10 blur-2xl" />
         </div>
         <div>
           <h3 class="mb-4 text-lg font-semibold">Quick Links</h3>
           <nav class="space-y-2 text-sm">
-            <NuxtLink to="/" class="block transition-colors hover:text-primary">
+            <NuxtLink to="/" class="block transition-colors hover:text-[#4A154B]">
               Home
             </NuxtLink>
-            <NuxtLink to="/about" class="block transition-colors hover:text-primary">
+            <NuxtLink to="/about" class="block transition-colors hover:text-[#4A154B]">
               About Us
             </NuxtLink>
-            <NuxtLink to="/browse" class="block transition-colors hover:text-primary">
+            <NuxtLink to="/browse" class="block transition-colors hover:text-[#4A154B]">
               Products
             </NuxtLink>
-            <NuxtLink to="/search" class="block transition-colors hover:text-primary">
+            <NuxtLink to="/search" class="block transition-colors hover:text-[#4A154B]">
               Search
             </NuxtLink>
           </nav>
@@ -98,11 +86,11 @@ const toggleDarkMode = () => {
             <button 
               @click="toggleDarkMode"
               class="inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-              :class="isDarkMode ? 'bg-primary' : 'bg-input'"
+              :class="isDark ? 'bg-[#4A154B]' : 'bg-input'"
             >
               <span
                 class="pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform"
-                :class="isDarkMode ? 'translate-x-5' : 'translate-x-0'"
+                :class="isDark ? 'translate-x-5' : 'translate-x-0'"
               />
             </button>
             <Moon class="h-4 w-4" />
@@ -117,13 +105,13 @@ const toggleDarkMode = () => {
           © 2024 Your Company. All rights reserved.
         </p>
         <nav class="flex gap-4 text-sm">
-          <a href="#" class="transition-colors hover:text-primary">
+          <a href="#" class="transition-colors hover:text-[#4A154B]">
             Privacy Policy
           </a>
-          <a href="#" class="transition-colors hover:text-primary">
+          <a href="#" class="transition-colors hover:text-[#4A154B]">
             Terms of Service
           </a>
-          <a href="#" class="transition-colors hover:text-primary">
+          <a href="#" class="transition-colors hover:text-[#4A154B]">
             Cookie Settings
           </a>
         </nav>
