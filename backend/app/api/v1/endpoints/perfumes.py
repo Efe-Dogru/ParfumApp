@@ -5,173 +5,138 @@ from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
-from app.models.perfume import Perfume
-from app.models.note import Note
-from app.models.main_accord import MainAccord
-from app.models.occasion import Occasion
-from app.models.season import Season
-from app.schemas.perfume import (
-    PerfumeCreate, PerfumeUpdate, Perfume as PerfumeSchema,
-    NoteBase, MainAccordBase, OccasionBase, SeasonBase
-)
+from app.models.perfume import Perfume as PerfumeModel
+from app.models.note import TopNote, MiddleNote, BaseNote
+from app.models.main_accord import MainAccord as MainAccordModel
+from app.schemas.perfume import Perfume, PerfumeCreate, PerfumeUpdate
 
 router = APIRouter()
 
-@router.get("/", response_model=List[PerfumeSchema])
-async def get_perfumes(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
-    brand: Optional[str] = None,
-    search: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+@router.get("/", response_model=List[Perfume])
+async def read_perfumes(
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
 ):
     """
-    Retrieve perfumes with pagination, optional brand filtering and name search.
+    Retrieve perfumes.
     """
-    query = select(Perfume).options(
-        selectinload(Perfume.top_notes),
-        selectinload(Perfume.middle_notes),
-        selectinload(Perfume.base_notes),
-        selectinload(Perfume.main_accords),
-        selectinload(Perfume.occasions),
-        selectinload(Perfume.seasons)
-    )
-    
-    if brand:
-        query = query.filter(Perfume.brand == brand)
-    
-    if search:
-        search_filter = or_(
-            Perfume.name.ilike(f"%{search}%"),
-            Perfume.brand.ilike(f"%{search}%"),
+    query = (
+        select(PerfumeModel)
+        .options(
+            selectinload(PerfumeModel.brand),
+            selectinload(PerfumeModel.type),
+            selectinload(PerfumeModel.family),
+            selectinload(PerfumeModel.concentration),
+            selectinload(PerfumeModel.country),
+            selectinload(PerfumeModel.perfumer),
+            selectinload(PerfumeModel.main_accords),
+            selectinload(PerfumeModel.top_notes),
+            selectinload(PerfumeModel.middle_notes),
+            selectinload(PerfumeModel.base_notes)
         )
-        query = query.filter(search_filter)
-    
-    query = query.offset(skip).limit(limit)
+        .offset(skip)
+        .limit(limit)
+    )
     result = await db.execute(query)
     perfumes = result.scalars().all()
     return perfumes
 
-@router.get("/brands", response_model=List[str])
-async def get_brands(db: AsyncSession = Depends(get_db)):
-    """
-    Get a list of all unique brands.
-    """
-    query = select(Perfume.brand).distinct()
-    result = await db.execute(query)
-    brands = result.scalars().all()
-    return brands
-
-@router.get("/{perfume_id}", response_model=PerfumeSchema)
-async def get_perfume(
-    perfume_id: int,
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Get a specific perfume by ID.
-    """
-    query = select(Perfume).options(
-        selectinload(Perfume.top_notes),
-        selectinload(Perfume.middle_notes),
-        selectinload(Perfume.base_notes),
-        selectinload(Perfume.main_accords),
-        selectinload(Perfume.occasions),
-        selectinload(Perfume.seasons)
-    ).filter(Perfume.id == perfume_id)
-    
-    result = await db.execute(query)
-    perfume = result.scalar_one_or_none()
-    
-    if perfume is None:
-        raise HTTPException(status_code=404, detail="Perfume not found")
-    return perfume
-
-async def get_related_items(db: AsyncSession, model, ids: List[int]):
-    if not ids:
-        return []
-    query = select(model).filter(model.id.in_(ids))
-    result = await db.execute(query)
-    return result.scalars().all()
-
-@router.post("/", response_model=PerfumeSchema)
+@router.post("/", response_model=Perfume)
 async def create_perfume(
-    perfume: PerfumeCreate,
-    db: AsyncSession = Depends(get_db)
+    *,
+    db: AsyncSession = Depends(get_db),
+    perfume_in: PerfumeCreate
 ):
     """
-    Create a new perfume.
+    Create new perfume.
     """
-    perfume_data = perfume.model_dump(exclude={
-        'top_note_ids', 'middle_note_ids', 'base_note_ids',
-        'main_accord_ids', 'occasion_ids', 'season_ids'
-    })
+    query = select(PerfumeModel).filter(PerfumeModel.name == perfume_in.name)
+    result = await db.execute(query)
+    db_perfume = result.scalar_one_or_none()
     
-    db_perfume = Perfume(**perfume_data)
+    if db_perfume:
+        raise HTTPException(
+            status_code=400,
+            detail="Perfume with this name already exists."
+        )
     
-    # Add relationships
-    if perfume.top_note_ids:
-        db_perfume.top_notes = await get_related_items(db, Note, perfume.top_note_ids)
-    if perfume.middle_note_ids:
-        db_perfume.middle_notes = await get_related_items(db, Note, perfume.middle_note_ids)
-    if perfume.base_note_ids:
-        db_perfume.base_notes = await get_related_items(db, Note, perfume.base_note_ids)
-    if perfume.main_accord_ids:
-        db_perfume.main_accords = await get_related_items(db, MainAccord, perfume.main_accord_ids)
-    if perfume.occasion_ids:
-        db_perfume.occasions = await get_related_items(db, Occasion, perfume.occasion_ids)
-    if perfume.season_ids:
-        db_perfume.seasons = await get_related_items(db, Season, perfume.season_ids)
-    
+    db_perfume = PerfumeModel(
+        name=perfume_in.name,
+        brand_id=perfume_in.brand_id,
+        type_id=perfume_in.type_id,
+        family_id=perfume_in.family_id,
+        concentration_id=perfume_in.concentration_id,
+        country_id=perfume_in.country_id,
+        perfumer_id=perfume_in.perfumer_id,
+        description=perfume_in.description,
+        year=perfume_in.year,
+        price=perfume_in.price,
+        image_url=perfume_in.image_url
+    )
     db.add(db_perfume)
     await db.commit()
     await db.refresh(db_perfume)
     return db_perfume
 
-@router.put("/{perfume_id}", response_model=PerfumeSchema)
-async def update_perfume(
-    perfume_id: int,
-    perfume: PerfumeUpdate,
-    db: AsyncSession = Depends(get_db)
+@router.get("/{perfume_id}", response_model=Perfume)
+async def read_perfume(
+    *,
+    db: AsyncSession = Depends(get_db),
+    perfume_id: int
 ):
     """
-    Update a perfume.
+    Get perfume by ID.
     """
-    query = select(Perfume).options(
-        selectinload(Perfume.top_notes),
-        selectinload(Perfume.middle_notes),
-        selectinload(Perfume.base_notes),
-        selectinload(Perfume.main_accords),
-        selectinload(Perfume.occasions),
-        selectinload(Perfume.seasons)
-    ).filter(Perfume.id == perfume_id)
+    query = (
+        select(PerfumeModel)
+        .options(
+            selectinload(PerfumeModel.brand),
+            selectinload(PerfumeModel.type),
+            selectinload(PerfumeModel.family),
+            selectinload(PerfumeModel.concentration),
+            selectinload(PerfumeModel.country),
+            selectinload(PerfumeModel.perfumer),
+            selectinload(PerfumeModel.main_accords),
+            selectinload(PerfumeModel.top_notes),
+            selectinload(PerfumeModel.middle_notes),
+            selectinload(PerfumeModel.base_notes)
+        )
+        .filter(PerfumeModel.id == perfume_id)
+    )
+    result = await db.execute(query)
+    perfume = result.scalar_one_or_none()
     
+    if not perfume:
+        raise HTTPException(
+            status_code=404,
+            detail="Perfume not found"
+        )
+    return perfume
+
+@router.put("/{perfume_id}", response_model=Perfume)
+async def update_perfume(
+    *,
+    db: AsyncSession = Depends(get_db),
+    perfume_id: int,
+    perfume_in: PerfumeUpdate
+):
+    """
+    Update perfume.
+    """
+    query = select(PerfumeModel).filter(PerfumeModel.id == perfume_id)
     result = await db.execute(query)
     db_perfume = result.scalar_one_or_none()
     
-    if db_perfume is None:
-        raise HTTPException(status_code=404, detail="Perfume not found")
+    if not db_perfume:
+        raise HTTPException(
+            status_code=404,
+            detail="Perfume not found"
+        )
     
-    # Update scalar attributes
-    update_data = perfume.model_dump(exclude_unset=True, exclude={
-        'top_note_ids', 'middle_note_ids', 'base_note_ids',
-        'main_accord_ids', 'occasion_ids', 'season_ids'
-    })
+    update_data = perfume_in.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_perfume, field, value)
-    
-    # Update relationships
-    if perfume.top_note_ids is not None:
-        db_perfume.top_notes = await get_related_items(db, Note, perfume.top_note_ids)
-    if perfume.middle_note_ids is not None:
-        db_perfume.middle_notes = await get_related_items(db, Note, perfume.middle_note_ids)
-    if perfume.base_note_ids is not None:
-        db_perfume.base_notes = await get_related_items(db, Note, perfume.base_note_ids)
-    if perfume.main_accord_ids is not None:
-        db_perfume.main_accords = await get_related_items(db, MainAccord, perfume.main_accord_ids)
-    if perfume.occasion_ids is not None:
-        db_perfume.occasions = await get_related_items(db, Occasion, perfume.occasion_ids)
-    if perfume.season_ids is not None:
-        db_perfume.seasons = await get_related_items(db, Season, perfume.season_ids)
     
     await db.commit()
     await db.refresh(db_perfume)
@@ -179,19 +144,30 @@ async def update_perfume(
 
 @router.delete("/{perfume_id}")
 async def delete_perfume(
-    perfume_id: int,
-    db: AsyncSession = Depends(get_db)
+    *,
+    db: AsyncSession = Depends(get_db),
+    perfume_id: int
 ):
     """
-    Delete a perfume.
+    Delete perfume by ID.
     """
-    query = select(Perfume).filter(Perfume.id == perfume_id)
+    query = select(PerfumeModel).filter(PerfumeModel.id == perfume_id)
     result = await db.execute(query)
     perfume = result.scalar_one_or_none()
     
-    if perfume is None:
-        raise HTTPException(status_code=404, detail="Perfume not found")
+    if not perfume:
+        raise HTTPException(
+            status_code=404,
+            detail="Perfume not found"
+        )
     
     await db.delete(perfume)
     await db.commit()
-    return {"message": "Perfume deleted successfully"} 
+    return {"message": "Perfume deleted successfully"}
+
+async def get_related_items(db: AsyncSession, model, ids: List[int]):
+    if not ids:
+        return []
+    query = select(model).filter(model.id.in_(ids))
+    result = await db.execute(query)
+    return result.scalars().all() 

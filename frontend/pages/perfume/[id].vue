@@ -36,8 +36,8 @@ onMounted(async () => {
       <div class="flex justify-between items-start mb-8">
         <div>
           <h1 class="text-4xl font-bold mb-2">{{ perfume.name }}</h1>
-          <p class="text-xl text-muted-foreground">{{ perfume.brand }}</p>
-          <p v-if="perfume.perfumer" class="text-sm text-muted-foreground mt-1">By {{ perfume.perfumer }}</p>
+          <p class="text-xl text-muted-foreground">{{ perfume.brand?.name }}</p>
+          <p v-if="perfume.perfumer" class="text-sm text-muted-foreground mt-1">By {{ perfume.perfumer?.name }}</p>
         </div>
       </div>
 
@@ -46,9 +46,9 @@ onMounted(async () => {
           <!-- Left Column -->
           <div class="aspect-square rounded-lg overflow-hidden">
             <img 
-              src="assets/images/perfume-placeholder.jpg" 
-              :alt="perfume.name" 
-              class="w-full h-full object-cover" 
+            :src="`http://127.0.0.1:8000/static/${perfume.local_image_path?.replace('\\', '/')}`"                         
+            :alt="perfume.name"
+              class="w-full h-full object-cover"
             />
           </div>
 
@@ -67,7 +67,7 @@ onMounted(async () => {
             <div class="grid grid-cols-2 gap-4">
               <div v-if="perfume.type">
                 <p class="font-medium">Type</p>
-                <p class="text-muted-foreground">{{ perfume.type }}</p>
+                <p class="text-muted-foreground">{{ perfume.type?.name }}</p>
               </div>
               <div v-if="perfume.gender">
                 <p class="font-medium">Gender</p>
@@ -75,11 +75,11 @@ onMounted(async () => {
               </div>
               <div v-if="perfume.family">
                 <p class="font-medium">Family</p>
-                <p class="text-muted-foreground">{{ perfume.family }}</p>
+                <p class="text-muted-foreground">{{ perfume.family?.name }}</p>
               </div>
               <div v-if="perfume.concentration">
                 <p class="font-medium">Concentration</p>
-                <p class="text-muted-foreground">{{ perfume.concentration }}</p>
+                <p class="text-muted-foreground">{{ perfume.concentration?.name }}</p>
               </div>
               <div v-if="perfume.release_year">
                 <p class="font-medium">Release Year</p>
@@ -154,28 +154,28 @@ onMounted(async () => {
           </div>
 
           <div class="space-y-6 border-t pt-6">
-            <div v-if="perfume.occasions?.length">
+            <div v-if="perfume.occasion?.length">
               <h2 class="text-xl font-semibold mb-2">Best For</h2>
               <div class="flex flex-wrap gap-2">
                 <span 
-                  v-for="occasion in perfume.occasions" 
-                  :key="occasion.id"
+                  v-for="occasion in perfume.occasion" 
+                  :key="occasion"
                   class="px-3 py-1 rounded-full bg-accent text-accent-foreground"
                 >
-                  {{ occasion.name }}
+                  {{ occasion }}
                 </span>
               </div>
             </div>
 
-            <div v-if="perfume.seasons?.length">
+            <div v-if="perfume.season?.length">
               <h2 class="text-xl font-semibold mb-2">Ideal Seasons</h2>
               <div class="flex flex-wrap gap-2">
                 <span 
-                  v-for="season in perfume.seasons" 
-                  :key="season.id"
+                  v-for="season in perfume.season" 
+                  :key="season"
                   class="px-3 py-1 rounded-full bg-accent text-accent-foreground"
                 >
-                  {{ season.name }}
+                  {{ season }}
                 </span>
               </div>
             </div>

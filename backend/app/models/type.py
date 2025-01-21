@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String
 from app.db.base_class import Base
 
-class Occasion(Base):
-    __tablename__ = "occasions"
+class Type(Base):
+    __tablename__ = "type"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(100), unique=True, nullable=False) 
+    name = Column(String(255), unique=True, nullable=False) 

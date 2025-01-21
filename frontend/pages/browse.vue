@@ -67,14 +67,14 @@ onMounted(() => {
         >
           <div class="aspect-square w-full">
             <img 
-              src="assets/images/perfume-placeholder.jpg" 
-              :alt="perfume.name"
+            :src="`http://127.0.0.1:8000/static/${perfume.local_image_path?.replace('\\', '/')}`"                         
+            :alt="perfume.name"
               class="w-full h-full object-cover"
             />
           </div>
           <div class="p-2">
-            <h2 class="text-sm font-medium group-hover:text-primary truncate">{{ perfume.name }}</h2>
-            <p class="text-xs text-muted-foreground truncate">{{ perfume.brand }}</p>
+            <h2 class="text-sm font-medium group-hover:text-primary truncate">{{ perfume.name + ' ' + perfume.concentration?.name}}</h2>
+            <p class="text-xs text-muted-foreground truncate">{{ perfume.brand?.name }}</p>
           </div>
         </NuxtLink>
       </div>

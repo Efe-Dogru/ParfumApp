@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings
 from pydantic import AnyHttpUrl, validator
 
@@ -10,8 +10,16 @@ class Settings(BaseSettings):
     # CORS Configuration
     CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:3000"]  # Frontend URL
     
-    # Database Configuration
-    DATABASE_URL: str = "sqlite:///./perfumes.db"
+    # PostgreSQL Database settings
+    POSTGRES_SERVER: str = "localhost"  # If using Docker, this should match your service name
+    POSTGRES_USER: str = "admin"
+    POSTGRES_PASSWORD: str = "admin"
+    POSTGRES_DB: str = "mydatabase"
+    POSTGRES_PORT: str = "5432"
+    
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
     
     # JWT Configuration
     SECRET_KEY: str = "your-secret-key-here"  # Change in production

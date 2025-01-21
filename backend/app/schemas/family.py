@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 
-class MainAccordBase(BaseModel):
+class FamilyBase(BaseModel):
     name: str
 
-class MainAccordCreate(MainAccordBase):
+class FamilyCreate(FamilyBase):
     pass
 
-class MainAccord(MainAccordBase):
+class Family(FamilyBase):
     id: int
 
     class Config:

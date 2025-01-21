@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 
-class MainAccordBase(BaseModel):
+class PerfumerBase(BaseModel):
     name: str
 
-class MainAccordCreate(MainAccordBase):
+class PerfumerCreate(PerfumerBase):
     pass
 
-class MainAccord(MainAccordBase):
+class Perfumer(PerfumerBase):
     id: int
 
     class Config:

@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 
-class MainAccordBase(BaseModel):
+class CountryBase(BaseModel):
     name: str
 
-class MainAccordCreate(MainAccordBase):
+class CountryCreate(CountryBase):
     pass
 
-class MainAccord(MainAccordBase):
+class Country(CountryBase):
     id: int
 
     class Config:
