@@ -10,7 +10,7 @@ useHead({
 })
 
 const titleNumber = ref(0)
-const titles = ["Dream ", "Perfect ", "Signature ", "Next ", "Unique", "Ideal", "Favorite"]
+const titles = ["Dream ", "Perfect ", "Next ", "Unique", "Ideal", "Favorite"]
 
 const updateTitle = () => {
   titleNumber.value = (titleNumber.value + 1) % titles.length

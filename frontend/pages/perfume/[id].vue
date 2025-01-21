@@ -32,7 +32,7 @@ onMounted(async () => {
       <div class="text-red-500">{{ error }}</div>
     </div>
 
-    <div v-else-if="perfume" class="max-w-4xl mx-auto">
+    <div v-else-if="perfume" class="mx-auto">
       <div class="flex justify-between items-start mb-8">
         <div>
           <h1 class="text-4xl font-bold mb-2">{{ perfume.name }}</h1>
@@ -107,7 +107,8 @@ onMounted(async () => {
                 :key="accord.id"
                 class="px-3 py-1 rounded-full bg-primary/10 text-primary"
               >
-                {{ accord.name }}
+                {{ accord.name.charAt(0).toUpperCase() + accord.name.slice(1) }}
+
               </span>
             </div>
           </div>
@@ -121,7 +122,7 @@ onMounted(async () => {
                   :key="note.id"
                   class="px-3 py-1 rounded-full bg-primary/10 text-primary"
                 >
-                  {{ note.name }}
+                  {{ note.name.charAt(0).toUpperCase() + note.name.slice(1) }}
                 </span>
               </div>
             </div>
@@ -134,7 +135,7 @@ onMounted(async () => {
                   :key="note.id"
                   class="px-3 py-1 rounded-full bg-primary/10 text-primary"
                 >
-                  {{ note.name }}
+                  {{ note.name.charAt(0).toUpperCase() + note.name.slice(1) }}
                 </span>
               </div>
             </div>
@@ -147,7 +148,7 @@ onMounted(async () => {
                   :key="note.id"
                   class="px-3 py-1 rounded-full bg-primary/10 text-primary"
                 >
-                  {{ note.name }}
+                  {{ note.name.charAt(0).toUpperCase() + note.name.slice(1) }}
                 </span>
               </div>
             </div>
@@ -162,7 +163,7 @@ onMounted(async () => {
                   :key="occasion"
                   class="px-3 py-1 rounded-full bg-accent text-accent-foreground"
                 >
-                  {{ occasion }}
+                  {{ occasion.charAt(0).toUpperCase() + occasion.slice(1) }}
                 </span>
               </div>
             </div>
@@ -175,7 +176,7 @@ onMounted(async () => {
                   :key="season"
                   class="px-3 py-1 rounded-full bg-accent text-accent-foreground"
                 >
-                  {{ season }}
+                  {{ season.charAt(0).toUpperCase() + season.slice(1) }}
                 </span>
               </div>
             </div>

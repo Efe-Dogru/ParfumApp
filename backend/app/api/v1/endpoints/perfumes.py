@@ -1,7 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_, join
 from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
@@ -170,4 +170,48 @@ async def get_related_items(db: AsyncSession, model, ids: List[int]):
         return []
     query = select(model).filter(model.id.in_(ids))
     result = await db.execute(query)
-    return result.scalars().all() 
+    return result.scalars().all()
+
+@router.get("/search/", response_model=List[Perfume])
+async def search_perfumes(
+    db: AsyncSession = Depends(get_db),
+    q: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100
+):
+    """
+    Search perfumes by name or brand name.
+    - q: Search query for perfume name or brand name
+    """
+    query = (
+        select(PerfumeModel)
+        .options(
+            selectinload(PerfumeModel.brand),
+            selectinload(PerfumeModel.type),
+            selectinload(PerfumeModel.family),
+            selectinload(PerfumeModel.concentration),
+            selectinload(PerfumeModel.country),
+            selectinload(PerfumeModel.perfumer),
+            selectinload(PerfumeModel.main_accords),
+            selectinload(PerfumeModel.top_notes),
+            selectinload(PerfumeModel.middle_notes),
+            selectinload(PerfumeModel.base_notes)
+        )
+    )
+    
+    if q:
+        query = (
+            query
+            .join(PerfumeModel.brand)
+            .filter(
+                or_(
+                    PerfumeModel.name.ilike(f"%{q}%"),
+                    PerfumeModel.brand.has(name=q)
+                )
+            )
+        )
+    
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    perfumes = result.scalars().all()
+    return perfumes 
