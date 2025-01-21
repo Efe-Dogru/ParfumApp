@@ -1,6 +1,36 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 
+interface Brand {
+  id: number
+  name: string
+}
+
+interface Type {
+  id: number
+  name: string
+}
+
+interface Family {
+  id: number
+  name: string
+}
+
+interface Concentration {
+  id: number
+  name: string
+}
+
+interface Country {
+  id: number
+  name: string
+}
+
+interface Perfumer {
+  id: number
+  name: string
+}
+
 interface Note {
   id: number
   name: string
@@ -11,38 +41,39 @@ interface MainAccord {
   name: string
 }
 
-interface Occasion {
-  id: number
-  name: string
-}
-
-interface Season {
-  id: number
-  name: string
-}
-
 export interface Perfume {
+  // Fields in the same order as backend model
   id: number
   name: string
-  description: string
-  brand?: string
-  price?: number
-  type?: string
+  brand_id: number
+  concentration_id: number
+  local_image_path?: string
   gender?: string
-  family?: string
+  type_id: number
+  family_id: number
   release_year?: number
-  concentration?: string
+  country_id: number
+  description?: string
   longevity?: string
   sillage?: string
-  image_url?: string
-  perfumer?: string
+  occasion?: string[]
+  season?: string[]
+  perfumer_id: number
   inspiration?: string
+  istrend?: any
+  assets?: string[]
+
+  // Relationships (same order as backend)
+  brand?: Brand
+  concentration?: Concentration
+  type?: Type
+  family?: Family
+  country?: Country
+  perfumer?: Perfumer
   top_notes?: Note[]
   middle_notes?: Note[]
   base_notes?: Note[]
   main_accords?: MainAccord[]
-  occasions?: Occasion[]
-  seasons?: Season[]
 }
 
 export const useCommon = () => {
@@ -65,31 +96,4 @@ export const useCommon = () => {
   }
 }
 
-export const usePerfumes = () => {
-  const perfumes: Ref<Perfume[]> = ref([])
-  const { isLoading, error, setLoading, setError } = useCommon()
 
-  const fetchPerfumes = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      // TODO: Replace with actual API call
-      perfumes.value = [
-        { id: 1, name: 'Sample Perfume 1', description: 'A delightful fragrance' },
-        { id: 2, name: 'Sample Perfume 2', description: 'An enchanting scent' },
-        { id: 3, name: 'Sample Perfume 3', description: 'A mysterious aroma' },
-      ]
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to fetch perfumes')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return {
-    perfumes,
-    isLoading,
-    error,
-    fetchPerfumes
-  }
-} 
