@@ -40,7 +40,7 @@ const fetchSearchResults = async (query: string) => {
   
   try {
     isLoading.value = true
-    const { data } = await searchPerfumes(query)
+    const { data } = await searchPerfumes({ q: query })
     searchResults.value = data
   } catch (error) {
     console.error('Search error:', error)

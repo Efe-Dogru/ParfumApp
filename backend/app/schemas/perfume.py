@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel
-from .note import TopNote, MiddleNote, BaseNote
+from .note import NoteResponse
 from .main_accord import MainAccord
 from .brand import Brand
 from .type import Type
@@ -8,6 +8,16 @@ from .family import Family
 from .country import Country
 from .concentration import Concentration
 from .perfumer import Perfumer
+
+class PerfumeNoteBase(BaseModel):
+    note_id: int
+    note_type: str  # 'top', 'middle', or 'base'
+
+class PerfumeNote(PerfumeNoteBase):
+    note: NoteResponse
+
+    class Config:
+        from_attributes = True
 
 class PerfumeBase(BaseModel):
     name: str
@@ -29,17 +39,13 @@ class PerfumeBase(BaseModel):
     istrend: Optional[dict] = None
 
 class PerfumeCreate(PerfumeBase):
-    top_note_ids: Optional[List[int]] = None
-    middle_note_ids: Optional[List[int]] = None
-    base_note_ids: Optional[List[int]] = None
+    notes: Optional[List[PerfumeNoteBase]] = None
     main_accord_ids: Optional[List[int]] = None
 
 class PerfumeUpdate(PerfumeBase):
     name: Optional[str] = None
     brand_id: Optional[int] = None
-    top_note_ids: Optional[List[int]] = None
-    middle_note_ids: Optional[List[int]] = None
-    base_note_ids: Optional[List[int]] = None
+    notes: Optional[List[PerfumeNoteBase]] = None
     main_accord_ids: Optional[List[int]] = None
 
 class Perfume(PerfumeBase):
@@ -50,9 +56,7 @@ class Perfume(PerfumeBase):
     family: Optional[Family] = None
     country: Optional[Country] = None
     perfumer: Optional[Perfumer] = None
-    top_notes: List[TopNote] = []
-    middle_notes: List[MiddleNote] = []
-    base_notes: List[BaseNote] = []
+    notes: List[PerfumeNote] = []
     main_accords: List[MainAccord] = []
 
     class Config:

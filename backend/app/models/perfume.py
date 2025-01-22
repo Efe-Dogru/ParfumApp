@@ -1,28 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Table, ARRAY, JSON
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Table, ARRAY, JSON, Enum
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
-
-# Junction tables
-perfume_top_notes = Table(
-    'perfume_top_notes',
-    Base.metadata,
-    Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
-    Column('note_id', Integer, ForeignKey('top_notes.id'), primary_key=True)
-)
-
-perfume_middle_notes = Table(
-    'perfume_middle_notes',
-    Base.metadata,
-    Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
-    Column('note_id', Integer, ForeignKey('middle_notes.id'), primary_key=True)
-)
-
-perfume_base_notes = Table(
-    'perfume_base_notes',
-    Base.metadata,
-    Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
-    Column('note_id', Integer, ForeignKey('base_notes.id'), primary_key=True)
-)
 
 perfume_main_accords = Table(
     'perfume_main_accords',
@@ -30,6 +8,15 @@ perfume_main_accords = Table(
     Column('perfume_id', Integer, ForeignKey('perfumes.id'), primary_key=True),
     Column('accord_id', Integer, ForeignKey('main_accords.id'), primary_key=True)
 )
+
+class PerfumeNote(Base):
+    __tablename__ = "perfume_notes"
+
+    perfume_id = Column(Integer, ForeignKey('perfumes.id'), primary_key=True)
+    note_id = Column(Integer, ForeignKey('notes.id'), primary_key=True)
+    note_type = Column(Enum('top', 'middle', 'base', name='note_type'), primary_key=True)
+
+    note = relationship("Note")
 
 class Perfume(Base):
     __tablename__ = "perfumes"
@@ -60,7 +47,5 @@ class Perfume(Base):
     family = relationship("Family")
     country = relationship("Country")
     perfumer = relationship("Perfumer")
-    top_notes = relationship("TopNote", secondary=perfume_top_notes)
-    middle_notes = relationship("MiddleNote", secondary=perfume_middle_notes)
-    base_notes = relationship("BaseNote", secondary=perfume_base_notes)
+    notes = relationship("PerfumeNote")
     main_accords = relationship("MainAccord", secondary=perfume_main_accords) 

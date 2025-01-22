@@ -4,11 +4,59 @@ export function useApi() {
   const getPerfumes = (page: number = 1, limit: number = 42) => 
     $axios.get(`/api/v1/perfumes/?skip=${(page - 1) * limit}&limit=${limit}`)
   const getPerfumeById = (id: string) => $axios.get(`/api/v1/perfumes/${id}`)
-  const searchPerfumes = (query: string) => $axios.get(`/api/v1/perfumes/search/?q=${query}&limit=10`)
+  
+  // Filter options endpoints
+  const getTypes = () => $axios.get('/api/v1/types/')
+  const getFamilies = () => $axios.get('/api/v1/families/')
+  const getConcentrations = () => $axios.get('/api/v1/concentrations/')
+  const getPerfumers = () => $axios.get('/api/v1/perfumers/')
+  const getCountries = () => $axios.get('/api/v1/countries/')
+  const getBrands = () => $axios.get('/api/v1/brands/')
+  
+  const searchPerfumes = (params: {
+    q?: string,
+    type?: string,
+    family?: string,
+    concentration?: string,
+    gender?: string,
+    brand?: string,
+    perfumer?: string,
+    country?: string,
+    page?: number,
+    limit?: number
+  }) => {
+    const { page = 1, limit = 42, ...filters } = params
+    const queryParams = new URLSearchParams()
+    
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) queryParams.append(key, String(value))
+    })
+    
+    // Add pagination
+    queryParams.append('skip', String((page - 1) * limit))
+    queryParams.append('limit', String(limit))
+    
+    return $axios.get(`/api/v1/perfumes/search/?${queryParams.toString()}`)
+  }
+  const searchNotes = (query: string) => $axios.get(`/api/v1/notes/search/?query=${query}&limit=10`)
+
+  const getNotes = (page: number = 1, limit: number = 42) => 
+    $axios.get(`/api/v1/notes/?skip=${(page - 1) * limit}&limit=${limit}`)
+  const getNoteById = (id: string) => $axios.get(`/api/v1/notes/${id}`)
 
   return {
     getPerfumes,
     getPerfumeById,
     searchPerfumes,
+    searchNotes,
+    getNotes,
+    getNoteById,
+    getTypes,
+    getFamilies,
+    getConcentrations,
+    getPerfumers,
+    getCountries,
+    getBrands
   }
 } 

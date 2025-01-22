@@ -1,25 +1,85 @@
 <script setup lang="ts">
 import { useApi } from '~/composables/useApi'
 import type { Perfume } from '~/composables/useCommon'
-import SearchInput from '~/components/ui/SearchInput.vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const { getPerfumes, searchPerfumes } = useApi()
+const route = useRoute()
+const router = useRouter()
+
+const { getPerfumes, searchPerfumes, getTypes, getFamilies, getConcentrations, getPerfumers, getCountries, getBrands } = useApi()
 const perfumes = ref<Perfume[]>([])
 const loading = ref(true)
-const currentPage = ref(1)
+const currentPage = ref(parseInt(route.query.page as string) || 1)
 const itemsPerPage = 42 // 6 columns * 7 rows
-const searchQuery = ref('')
+const showAdvancedFilters = ref(false)
+const advancedFiltersRef = ref<HTMLElement | null>(null)
+
+// Filter states initialized from route query
+const filters = reactive({
+  q: (route.query.q as string) || '',
+  type: (route.query.type as string) || '',
+  family: (route.query.family as string) || '',
+  concentration: (route.query.concentration as string) || '',
+  gender: (route.query.gender as string) || '',
+  brand: (route.query.brand as string) || '',
+  perfumer: (route.query.perfumer as string) || '',
+  country: (route.query.country as string) || ''
+})
+
+// Filter options
+const typeOptions = ref<string[]>([])
+const familyOptions = ref<string[]>([])
+const concentrationOptions = ref<string[]>([])
+const genderOptions = ['Male', 'Female', 'Unisex']
+const perfumerOptions = ref<string[]>([])
+const countryOptions = ref<string[]>([])
+const brandOptions = ref<string[]>([])
+
+// Fetch filter options
+const fetchFilterOptions = async () => {
+  try {
+    const [typesRes, familiesRes, concentrationsRes, perfumersRes, countriesRes, brandsRes] = await Promise.all([
+      getTypes(),
+      getFamilies(),
+      getConcentrations(),
+      getPerfumers(),
+      getCountries(),
+      getBrands()
+    ])
+    
+    typeOptions.value = typesRes.data.map((type: any) => type.name)
+    familyOptions.value = familiesRes.data.map((family: any) => family.name)
+    concentrationOptions.value = concentrationsRes.data.map((conc: any) => conc.name)
+    perfumerOptions.value = perfumersRes.data.map((perfumer: any) => perfumer.name)
+    countryOptions.value = countriesRes.data.map((country: any) => country.name)
+    brandOptions.value = brandsRes.data.map((brand: any) => brand.name)
+  } catch (error) {
+    console.error('Error fetching filter options:', error)
+  }
+}
+
+// Update URL with current state
+const updateUrlQuery = () => {
+  const query = {
+    page: currentPage.value.toString(),
+    ...Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== '')
+    )
+  }
+  router.push({ query })
+}
 
 const fetchPerfumes = async (page: number) => {
   loading.value = true
   try {
-    if (searchQuery.value) {
-      const response = await searchPerfumes(searchQuery.value)
-      perfumes.value = response.data
-    } else {
-      const response = await getPerfumes(page, itemsPerPage)
-      perfumes.value = response.data
-    }
+    const response = await searchPerfumes({
+      ...filters,
+      page,
+      limit: itemsPerPage
+    })
+    perfumes.value = response.data
+    currentPage.value = page
+    updateUrlQuery()
   } catch (error) {
     console.error('Error fetching perfumes:', error)
   } finally {
@@ -53,20 +113,208 @@ const goToPage = (page: number) => {
   }
 }
 
-onMounted(() => {
+// Debounced search with URL update
+let searchTimeout: NodeJS.Timeout
+const handleSearch = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  filters.q = target.value
+  
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    fetchPerfumes(1)
+  }, 500)
+}
+
+const handleFilterChange = () => {
+  currentPage.value = 1
+  fetchPerfumes(1)
+}
+
+// Handle click outside for advanced filters
+const handleClickOutside = (event: MouseEvent) => {
+  if (
+    showAdvancedFilters.value &&
+    advancedFiltersRef.value &&
+    !advancedFiltersRef.value.contains(event.target as Node) &&
+    !(event.target as HTMLElement).closest('button')
+  ) {
+    showAdvancedFilters.value = false
+  }
+}
+
+onMounted(async () => {
+  await fetchFilterOptions()
+  // Initial fetch using route query parameters
   fetchPerfumes(currentPage.value)
+  window.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  clearTimeout(searchTimeout)
+  window.removeEventListener('click', handleClickOutside)
 })
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-6">
-    <h1 class="text-2xl font-bold mb-4">Browse Perfumes</h1>
-    
-    <div class="mb-6 max-w-xl mx-auto">
-      <SearchInput
-        v-model="searchQuery"
-        placeholder="Search perfumes..."
-      />
+    <div class="relative">
+      <h1 class="text-2xl font-bold mb-4">Browse Perfumes</h1>
+      
+      <!-- Main Filters -->
+      <div class="grid grid-cols-1 md:grid-cols-[1.5fr,1fr,1fr,1fr,1fr,auto] gap-4 mb-6">
+        <!-- Search -->
+        <div>
+          <input
+            v-model="filters.q"
+            type="text"
+            placeholder="Search perfumes..."
+            @input="handleSearch"
+            class="w-full px-4 py-2 rounded-lg bg-background border border-input hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          />
+        </div>
+
+        <!-- Type Filter -->
+        <div class="relative select-wrapper">
+          <select
+            v-model="filters.type"
+            @change="handleFilterChange"
+            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          >
+            <option value="">Any Type</option>
+            <option v-for="type in typeOptions" :key="type" :value="type">
+              {{ type }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Family Filter -->
+        <div class="relative select-wrapper">
+          <select
+            v-model="filters.family"
+            @change="handleFilterChange"
+            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          >
+            <option value="">Any Family</option>
+            <option v-for="family in familyOptions" :key="family" :value="family">
+              {{ family }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Concentration Filter -->
+        <div class="relative select-wrapper">
+          <select
+            v-model="filters.concentration"
+            @change="handleFilterChange"
+            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          >
+            <option value="">Any Concentration</option>
+            <option v-for="conc in concentrationOptions" :key="conc" :value="conc">
+              {{ conc }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Gender Filter -->
+        <div class="relative select-wrapper">
+          <select
+            v-model="filters.gender"
+            @change="handleFilterChange"
+            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          >
+            <option value="">Any Gender</option>
+            <option v-for="gender in genderOptions" :key="gender" :value="gender">
+              {{ gender }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Advanced Filters Toggle -->
+        <button
+          @click="showAdvancedFilters = !showAdvancedFilters"
+          class="w-10 h-10 rounded-lg border border-input flex items-center justify-center hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          :class="{ 'bg-accent': showAdvancedFilters }"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 6h18"/>
+            <path d="M7 12h10"/>
+            <path d="M10 18h4"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Advanced Filters Panel -->
+      <div
+        v-if="showAdvancedFilters"
+        ref="advancedFiltersRef"
+        class="absolute right-0 z-50 w-full md:w-[600px] mt-2 p-6 bg-background border rounded-lg shadow-lg"
+      >
+        <div class="space-y-4">
+          <h3 class="text-lg font-semibold mb-4">Advanced Filters</h3>
+          
+          <!-- Brand Filter -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Brand</label>
+            <div class="relative select-wrapper">
+              <select
+                v-model="filters.brand"
+                @change="handleFilterChange"
+                class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+              >
+                <option value="">Any Brand</option>
+                <option v-for="brand in brandOptions" :key="brand" :value="brand">
+                  {{ brand }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Perfumer Filter -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Perfumer</label>
+            <div class="relative select-wrapper">
+              <select
+                v-model="filters.perfumer"
+                @change="handleFilterChange"
+                class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+              >
+                <option value="">Any Perfumer</option>
+                <option v-for="perfumer in perfumerOptions" :key="perfumer" :value="perfumer">
+                  {{ perfumer }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Country Filter -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Country</label>
+            <div class="relative select-wrapper">
+              <select
+                v-model="filters.country"
+                @change="handleFilterChange"
+                class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+              >
+                <option value="">Any Country</option>
+                <option v-for="country in countryOptions" :key="country" :value="country">
+                  {{ country }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-if="loading" class="flex justify-center items-center py-8">
@@ -148,4 +396,24 @@ onMounted(() => {
       </nav>
     </div>
   </div>
-</template> 
+</template>
+
+<style scoped>
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid currentColor;
+  pointer-events: none;
+}
+</style> 
