@@ -84,12 +84,12 @@ onUnmounted(() => {
 <template>
   <div class="min-h-screen bg-background text-foreground">
     <!-- Header with TubelightNavbar -->
-    <div class="mb-16">
+    <div :class="{ 'mb-16': !isIndexPage }">
       <TubelightNavbar :items="navItems" :is-index-page="isIndexPage" class="" />
     </div>
 
     <!-- Main content -->
-    <main class="container mx-auto px-4 pt-8">
+    <main>
       <slot />
     </main>
 
