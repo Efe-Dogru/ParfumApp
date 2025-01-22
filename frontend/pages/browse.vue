@@ -1,25 +1,29 @@
 <script setup lang="ts">
 import { useApi } from '~/composables/useApi'
 import type { Perfume } from '~/composables/useCommon'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
 
 const { getPerfumes, searchPerfumes, getTypes, getFamilies, getConcentrations, getPerfumers, getCountries, getBrands } = useApi()
 const perfumes = ref<Perfume[]>([])
 const loading = ref(true)
-const currentPage = ref(1)
+const currentPage = ref(parseInt(route.query.page as string) || 1)
 const itemsPerPage = 42 // 6 columns * 7 rows
 const showAdvancedFilters = ref(false)
 const advancedFiltersRef = ref<HTMLElement | null>(null)
 
-// Filter states
+// Filter states initialized from route query
 const filters = reactive({
-  q: '',
-  type: '',
-  family: '',
-  concentration: '',
-  gender: '',
-  brand: '',
-  perfumer: '',
-  country: ''
+  q: (route.query.q as string) || '',
+  type: (route.query.type as string) || '',
+  family: (route.query.family as string) || '',
+  concentration: (route.query.concentration as string) || '',
+  gender: (route.query.gender as string) || '',
+  brand: (route.query.brand as string) || '',
+  perfumer: (route.query.perfumer as string) || '',
+  country: (route.query.country as string) || ''
 })
 
 // Filter options
@@ -54,6 +58,17 @@ const fetchFilterOptions = async () => {
   }
 }
 
+// Update URL with current state
+const updateUrlQuery = () => {
+  const query = {
+    page: currentPage.value.toString(),
+    ...Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== '')
+    )
+  }
+  router.push({ query })
+}
+
 const fetchPerfumes = async (page: number) => {
   loading.value = true
   try {
@@ -63,6 +78,8 @@ const fetchPerfumes = async (page: number) => {
       limit: itemsPerPage
     })
     perfumes.value = response.data
+    currentPage.value = page
+    updateUrlQuery()
   } catch (error) {
     console.error('Error fetching perfumes:', error)
   } finally {
@@ -96,7 +113,7 @@ const goToPage = (page: number) => {
   }
 }
 
-// Debounced search
+// Debounced search with URL update
 let searchTimeout: NodeJS.Timeout
 const handleSearch = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -128,6 +145,7 @@ const handleClickOutside = (event: MouseEvent) => {
 
 onMounted(async () => {
   await fetchFilterOptions()
+  // Initial fetch using route query parameters
   fetchPerfumes(currentPage.value)
   window.addEventListener('click', handleClickOutside)
 })
