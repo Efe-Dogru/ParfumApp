@@ -118,8 +118,8 @@ onUnmounted(() => {
         </div>
       </section>
 
-      <section class="py-8 md:py-16">
-        <div class="container mb-12">
+      <section class="mt-40">
+        <div class="mb-12">
           <h2 class="mb-8 text-2xl font-bold tracking-tight">Featured Perfumes</h2>
           <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <!-- Placeholder for featured perfumes -->
@@ -131,9 +131,25 @@ onUnmounted(() => {
                 </p>
               </div>
             </div>
+            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold">Coming Soon</h3>
+                <p class="text-sm text-muted-foreground">
+                  Featured perfumes will be displayed here
+                </p>
+              </div>
+            </div>
+            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold">Coming Soon</h3>
+                <p class="text-sm text-muted-foreground">
+                  Featured perfumes will be displayed here
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="container mb-16">
+        <div class="mb-16">
           <h2 class="mb-8 text-2xl font-bold tracking-tight">Newest Perfumes</h2>
           <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <!-- Placeholder for featured perfumes -->
@@ -145,12 +161,44 @@ onUnmounted(() => {
                 </p>
               </div>
             </div>
+            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold">Coming Soon</h3>
+                <p class="text-sm text-muted-foreground">
+                  Featured perfumes will be displayed here
+                </p>
+              </div>
+            </div>
+            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold">Coming Soon</h3>
+                <p class="text-sm text-muted-foreground">
+                  Featured perfumes will be displayed here
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="container mb-12">
+        <div class="mb-12">
           <h2 class="mb-8 text-2xl font-bold tracking-tight">Most Popular Perfumes</h2>
           <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <!-- Placeholder for featured perfumes -->
+            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold">Coming Soon</h3>
+                <p class="text-sm text-muted-foreground">
+                  Featured perfumes will be displayed here
+                </p>
+              </div>
+            </div>
+            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold">Coming Soon</h3>
+                <p class="text-sm text-muted-foreground">
+                  Featured perfumes will be displayed here
+                </p>
+              </div>
+            </div>
             <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
               <div class="p-6">
                 <h3 class="text-lg font-semibold">Coming Soon</h3>

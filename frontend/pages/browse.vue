@@ -1,18 +1,25 @@
 <script setup lang="ts">
 import { useApi } from '~/composables/useApi'
 import type { Perfume } from '~/composables/useCommon'
+import SearchInput from '~/components/ui/SearchInput.vue'
 
-const { getPerfumes } = useApi()
+const { getPerfumes, searchPerfumes } = useApi()
 const perfumes = ref<Perfume[]>([])
 const loading = ref(true)
 const currentPage = ref(1)
 const itemsPerPage = 42 // 6 columns * 7 rows
+const searchQuery = ref('')
 
 const fetchPerfumes = async (page: number) => {
   loading.value = true
   try {
-    const response = await getPerfumes(page, itemsPerPage)
-    perfumes.value = response.data
+    if (searchQuery.value) {
+      const response = await searchPerfumes(searchQuery.value)
+      perfumes.value = response.data
+    } else {
+      const response = await getPerfumes(page, itemsPerPage)
+      perfumes.value = response.data
+    }
   } catch (error) {
     console.error('Error fetching perfumes:', error)
   } finally {
@@ -54,6 +61,14 @@ onMounted(() => {
 <template>
   <div class="container mx-auto px-4 py-6">
     <h1 class="text-2xl font-bold mb-4">Browse Perfumes</h1>
+    
+    <div class="mb-6 max-w-xl mx-auto">
+      <SearchInput
+        v-model="searchQuery"
+        placeholder="Search perfumes..."
+      />
+    </div>
+
     <div v-if="loading" class="flex justify-center items-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>
@@ -73,7 +88,7 @@ onMounted(() => {
             />
           </div>
           <div class="p-2">
-            <h2 class="text-sm font-medium group-hover:text-primary truncate">{{ perfume.name + ' ' + perfume.concentration?.name}}</h2>
+            <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ perfume.name + ' ' + perfume.concentration?.name}}</h2>
             <p class="text-xs text-muted-foreground truncate">{{ perfume.brand?.name }}</p>
           </div>
         </NuxtLink>
