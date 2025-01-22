@@ -104,8 +104,8 @@ onUnmounted(() => {
               />
               <InteractiveHoverButton
                 class="mt-4 ml-8"
-                text="Search Perfumes"
-                @click="navigateTo('/search')"
+                text="Search Notes"
+                @click="navigateTo('/notes')"
               />
             </div>
             <!-- <NuxtLink

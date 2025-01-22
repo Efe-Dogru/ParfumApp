@@ -5,10 +5,16 @@ from sqlalchemy import select, or_, and_, join
 from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
-from app.models.perfume import Perfume as PerfumeModel
-from app.models.note import TopNote, MiddleNote, BaseNote
+from app.models.perfume import Perfume as PerfumeModel, PerfumeNote as PerfumeNoteModel
+from app.models.note import Note as NoteModel
 from app.models.main_accord import MainAccord as MainAccordModel
 from app.schemas.perfume import Perfume, PerfumeCreate, PerfumeUpdate
+from app.models.brand import Brand as BrandModel
+from app.models.country import Country as CountryModel
+from app.models.type import Type as TypeModel
+from app.models.family import Family as FamilyModel
+from app.models.perfumer import Perfumer as PerfumerModel
+from app.models.concentration import Concentration as ConcentrationModel
 
 router = APIRouter()
 
@@ -31,9 +37,7 @@ async def read_perfumes(
             selectinload(PerfumeModel.country),
             selectinload(PerfumeModel.perfumer),
             selectinload(PerfumeModel.main_accords),
-            selectinload(PerfumeModel.top_notes),
-            selectinload(PerfumeModel.middle_notes),
-            selectinload(PerfumeModel.base_notes)
+            selectinload(PerfumeModel.notes).selectinload(PerfumeNoteModel.note)
         )
         .offset(skip)
         .limit(limit)
@@ -61,20 +65,27 @@ async def create_perfume(
             detail="Perfume with this name already exists."
         )
     
-    db_perfume = PerfumeModel(
-        name=perfume_in.name,
-        brand_id=perfume_in.brand_id,
-        type_id=perfume_in.type_id,
-        family_id=perfume_in.family_id,
-        concentration_id=perfume_in.concentration_id,
-        country_id=perfume_in.country_id,
-        perfumer_id=perfume_in.perfumer_id,
-        description=perfume_in.description,
-        year=perfume_in.year,
-        price=perfume_in.price,
-        image_url=perfume_in.image_url
-    )
+    # Create perfume
+    db_perfume = PerfumeModel(**perfume_in.dict(exclude={'notes', 'main_accord_ids'}))
     db.add(db_perfume)
+    await db.commit()
+    await db.refresh(db_perfume)
+
+    # Add notes
+    if perfume_in.notes:
+        for note_data in perfume_in.notes:
+            perfume_note = PerfumeNoteModel(
+                perfume_id=db_perfume.id,
+                note_id=note_data.note_id,
+                note_type=note_data.note_type
+            )
+            db.add(perfume_note)
+
+    # Add main accords
+    if perfume_in.main_accord_ids:
+        main_accords = await get_related_items(db, MainAccordModel, perfume_in.main_accord_ids)
+        db_perfume.main_accords = main_accords
+
     await db.commit()
     await db.refresh(db_perfume)
     return db_perfume
@@ -98,9 +109,7 @@ async def read_perfume(
             selectinload(PerfumeModel.country),
             selectinload(PerfumeModel.perfumer),
             selectinload(PerfumeModel.main_accords),
-            selectinload(PerfumeModel.top_notes),
-            selectinload(PerfumeModel.middle_notes),
-            selectinload(PerfumeModel.base_notes)
+            selectinload(PerfumeModel.notes).selectinload(PerfumeNoteModel.note)
         )
         .filter(PerfumeModel.id == perfume_id)
     )
@@ -134,9 +143,33 @@ async def update_perfume(
             detail="Perfume not found"
         )
     
-    update_data = perfume_in.dict(exclude_unset=True)
+    # Update basic fields
+    update_data = perfume_in.dict(exclude_unset=True, exclude={'notes', 'main_accord_ids'})
     for field, value in update_data.items():
         setattr(db_perfume, field, value)
+    
+    # Update notes if provided
+    if perfume_in.notes is not None:
+        # Remove existing notes
+        await db.execute(
+            select(PerfumeNoteModel)
+            .filter(PerfumeNoteModel.perfume_id == perfume_id)
+            .delete()
+        )
+        
+        # Add new notes
+        for note_data in perfume_in.notes:
+            perfume_note = PerfumeNoteModel(
+                perfume_id=db_perfume.id,
+                note_id=note_data.note_id,
+                note_type=note_data.note_type
+            )
+            db.add(perfume_note)
+
+    # Update main accords if provided
+    if perfume_in.main_accord_ids is not None:
+        main_accords = await get_related_items(db, MainAccordModel, perfume_in.main_accord_ids)
+        db_perfume.main_accords = main_accords
     
     await db.commit()
     await db.refresh(db_perfume)
@@ -176,12 +209,27 @@ async def get_related_items(db: AsyncSession, model, ids: List[int]):
 async def search_perfumes(
     db: AsyncSession = Depends(get_db),
     q: Optional[str] = None,
+    country: Optional[str] = None,
+    gender: Optional[str] = Query(None, regex="^(Male|Female|Unisex)$"),
+    brand: Optional[str] = None,
+    type: Optional[str] = None,
+    family: Optional[str] = None,
+    concentration: Optional[str] = None,
+    perfumer: Optional[str] = None,
     skip: int = 0,
     limit: int = 100
 ):
     """
-    Search perfumes by name or brand name.
+    Search and filter perfumes with various criteria:
     - q: Search query for perfume name or brand name
+    - country: Filter by country name
+    - gender: Filter by gender (Male, Female, or Unisex)
+    - brand: Filter by brand name
+    - type: Filter by perfume type name
+    - family: Filter by perfume family name
+    - concentration: Filter by concentration name
+    - perfumer: Filter by perfumer name
+
     """
     query = (
         select(PerfumeModel)
@@ -193,23 +241,49 @@ async def search_perfumes(
             selectinload(PerfumeModel.country),
             selectinload(PerfumeModel.perfumer),
             selectinload(PerfumeModel.main_accords),
-            selectinload(PerfumeModel.top_notes),
-            selectinload(PerfumeModel.middle_notes),
-            selectinload(PerfumeModel.base_notes)
+            selectinload(PerfumeModel.notes).selectinload(PerfumeNoteModel.note)
         )
     )
     
+    filters = []
+    
     if q:
-        query = (
-            query
-            .join(PerfumeModel.brand)
-            .filter(
-                or_(
-                    PerfumeModel.name.ilike(f"%{q}%"),
-                    PerfumeModel.brand.has(name=q)
-                )
+        filters.append(
+            or_(
+                PerfumeModel.name.ilike(f"%{q}%"),
+                PerfumeModel.brand.has(BrandModel.name.ilike(f"%{q}%"))
             )
         )
+    
+    # Country filter
+    if country:
+        filters.append(PerfumeModel.country.has(CountryModel.name.ilike(f"%{country}%")))
+    
+    if gender:
+        filters.append(PerfumeModel.gender.ilike(gender))
+    
+    # Brand filter
+    if brand:
+        filters.append(PerfumeModel.brand.has(BrandModel.name.ilike(f"%{brand}%")))
+    
+    # Type filter
+    if type:
+        filters.append(PerfumeModel.type.has(TypeModel.name.ilike(f"%{type}%")))
+    
+    # Family filter
+    if family:
+        filters.append(PerfumeModel.family.has(FamilyModel.name.ilike(f"%{family}%")))
+    
+    # Concentration filter
+    if concentration:
+        filters.append(PerfumeModel.concentration.has(ConcentrationModel.name.ilike(f"%{concentration}%")))
+    
+    # Perfumer filter
+    if perfumer:
+        filters.append(PerfumeModel.perfumer.has(PerfumerModel.name.ilike(f"%{perfumer}%")))
+    
+    if filters:
+        query = query.filter(and_(*filters))
     
     query = query.offset(skip).limit(limit)
     result = await db.execute(query)
