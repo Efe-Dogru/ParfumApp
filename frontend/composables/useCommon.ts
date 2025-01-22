@@ -31,9 +31,10 @@ interface Perfumer {
   name: string
 }
 
-interface Note {
+export interface Note {
   id: number
   name: string
+  image_filename: string
 }
 
 interface MainAccord {

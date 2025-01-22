@@ -29,8 +29,7 @@ const { searchPerfumes } = useApi()
 
 const navItems = [
   { name: 'Home', url: '/', icon: Home },
-  { name: 'Browse', url: '/browse', icon: Briefcase },
-  // { name: 'Search', url: '/search', icon: Search },
+  { name: 'Perfumes', url: '/browse', icon: Search },
   { name: 'Notes', url: '/notes', icon: User },
   { name: 'Feedback', url: '/feedback', icon: User },
   { name: 'About', url: '/about', icon: User },
@@ -44,7 +43,7 @@ const fetchSearchResults = async (query: string) => {
   
   try {
     isLoading.value = true
-    const { data } = await searchPerfumes(query)
+    const { data } = await searchPerfumes({ q: query })
     searchResults.value = data
   } catch (error) {
     console.error('Search error:', error)
