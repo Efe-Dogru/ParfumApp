@@ -221,35 +221,71 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, 
-    rgba(230, 230, 250, 1) 0%,
-    rgba(255, 192, 203, 0.9) 100%
-  );
+  background: 
+    linear-gradient(135deg, 
+      rgba(255, 223, 236, 0.8) 0%,
+      rgba(230, 230, 250, 0.9) 50%,
+      rgba(255, 192, 203, 0.8) 100%
+    );
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  animation: gradientShift 15s ease-in-out infinite;
 }
 
 :root.dark .background-animation {
-  background: linear-gradient(135deg, 
-    rgba(44, 44, 84, 1) 0%,
-    rgba(84, 35, 45, 0.9) 100%
-  );
+  background: 
+    linear-gradient(135deg, 
+      rgba(64, 45, 95, 0.9) 0%,
+      rgba(44, 44, 84, 0.9) 50%,
+      rgba(84, 35, 45, 0.9) 100%
+    );
+}
+
+.background-animation::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30c2.5-2.5 5-5 7.5-7.5s5-5 7.5-7.5M30 30c-2.5 2.5-5 5-7.5 7.5s-5 5-7.5 7.5M30 30c2.5 2.5 5 5 7.5 7.5s5 5 7.5 7.5M30 30c-2.5-2.5-5-5-7.5-7.5s-5-5-7.5-7.5' stroke='rgba(255,255,255,0.05)' fill='none'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+}
+
+:root.dark .background-animation::before {
+  opacity: 0.2;
 }
 
 .luxury-overlay {
   position: absolute;
   inset: 0;
   background: 
-    radial-gradient(circle at 20% 20%, rgba(230, 230, 250, 0.4) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 192, 203, 0.4) 0%, transparent 50%);
+    radial-gradient(circle at 20% 20%, rgba(255, 223, 236, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(230, 230, 250, 0.4) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50c0-15 15-15 15 0s-15 15-15 0zM65 50c0-10 10-10 10 0s-10 10-10 0z' stroke='rgba(255,255,255,0.03)' fill='none'/%3E%3C/svg%3E");
   pointer-events: none;
+  mix-blend-mode: soft-light;
 }
 
 :root.dark .luxury-overlay {
   background: 
-    radial-gradient(circle at 20% 20%, rgba(44, 44, 84, 0.4) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(84, 35, 45, 0.4) 0%, transparent 50%);
+    radial-gradient(circle at 20% 20%, rgba(64, 45, 95, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(84, 35, 45, 0.4) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50c0-15 15-15 15 0s-15 15-15 0zM65 50c0-10 10-10 10 0s-10 10-10 0z' stroke='rgba(255,255,255,0.02)' fill='none'/%3E%3C/svg%3E");
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
 }
 
 .perfume-bottle {
@@ -295,8 +331,8 @@ onUnmounted(() => {
 .mist-particle {
   position: absolute;
   background: linear-gradient(135deg,
-    rgba(230, 230, 250, 0.2),
-    rgba(255, 192, 203, 0.1)
+    rgba(255, 223, 236, 0.2),
+    rgba(230, 230, 250, 0.1)
   );
   border-radius: 50%;
   filter: blur(20px);
@@ -306,7 +342,7 @@ onUnmounted(() => {
 
 :root.dark .mist-particle {
   background: linear-gradient(135deg,
-    rgba(44, 44, 84, 0.2),
+    rgba(64, 45, 95, 0.2),
     rgba(84, 35, 45, 0.1)
   );
 }
@@ -328,8 +364,6 @@ onUnmounted(() => {
     transform: translateY(-50%) translateX(10%) scale(1.2);
   }
 }
-
-
 
 .slide-enter-active,
 .slide-leave-active {
@@ -442,4 +476,12 @@ onUnmounted(() => {
 .background-animation .sparkle:nth-child(18) { --tx: -120px; --ty: 120px; animation-delay: 1.4s; left: 95%; top: 50%; }
 .background-animation .sparkle:nth-child(19) { --tx: 110px; --ty: -110px; animation-delay: 2.1s; left: 65%; top: 10%; }
 .background-animation .sparkle:nth-child(20) { --tx: -100px; --ty: 100px; animation-delay: 3.7s; left: 15%; top: 90%; }
+
+.luxury-perfume-image {
+  display: none;
+}
+
+:root.dark .luxury-perfume-image {
+  display: none;
+}
 </style> 
