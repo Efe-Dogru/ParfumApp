@@ -30,8 +30,10 @@ const { searchPerfumes } = useApi()
 const navItems = [
   { name: 'Home', url: '/', icon: Home },
   { name: 'Browse', url: '/browse', icon: Briefcase },
-  { name: 'Search', url: '/search', icon: Search },
-  { name: 'About', url: '/about', icon: User }
+  // { name: 'Search', url: '/search', icon: Search },
+  { name: 'Notes', url: '/notes', icon: User },
+  { name: 'Feedback', url: '/feedback', icon: User },
+  { name: 'About', url: '/about', icon: User },
 ]
 
 const fetchSearchResults = async (query: string) => {
