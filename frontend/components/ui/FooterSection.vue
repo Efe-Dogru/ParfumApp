@@ -47,7 +47,7 @@ onMounted(() => {
             <NuxtLink to="/browse" class="block transition-colors hover:text-[#4A154B]">
               Products
             </NuxtLink>
-            <NuxtLink to="/search" class="block transition-colors hover:text-[#4A154B]">
+            <NuxtLink to="/browse" class="block transition-colors hover:text-[#4A154B]">
               Search
             </NuxtLink>
           </nav>

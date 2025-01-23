@@ -42,6 +42,11 @@ export interface Note {
   mood?: string
 }
 
+export interface PerfumeNote {
+  note_type: 'top' | 'middle' | 'base'
+  note: string
+}
+
 interface MainAccord {
   id: string
   name: string
@@ -83,6 +88,7 @@ export interface Perfume {
   middle_notes?: Note[]
   base_notes?: Note[]
   main_accords?: MainAccord[]
+  perfume_notes?: PerfumeNote[]
 }
 
 export const useCommon = () => {

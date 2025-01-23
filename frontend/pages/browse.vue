@@ -14,8 +14,20 @@ const itemsPerPage = 42 // 6 columns * 7 rows
 const showAdvancedFilters = ref(false)
 const advancedFiltersRef = ref<HTMLElement | null>(null)
 
+interface Filters {
+  q: string;
+  gender: string;
+  category: string;
+  brand: string;
+  country: string;
+  type: string;
+  family: string;
+  concentration: string;
+  perfumer: string;
+}
+
 // Filter states initialized from route query
-const filters = reactive({
+const filters = reactive<Filters>({
   q: (route.query.q as string) || '',
   gender: (route.query.gender as string) || '',
   category: (route.query.category as string) || '',
@@ -145,6 +157,39 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
+// Add new computed property for active filters
+const activeFilters = computed(() => {
+  return Object.entries(filters)
+    .filter(([_, value]) => value !== '')
+    .map(([key, value]) => ({
+      key,
+      value,
+      label: getFilterLabel(key as keyof Filters, value)
+    }))
+})
+
+// Helper function to get readable labels for filters
+const getFilterLabel = (key: keyof Filters, value: string) => {
+  const labels: Record<keyof Filters, string> = {
+    q: 'Search',
+    gender: 'Gender',
+    category: 'Category',
+    brand: 'Brand',
+    country: 'Country',
+    type: 'Type',
+    family: 'Family',
+    concentration: 'Concentration',
+    perfumer: 'Perfumer'
+  }
+  return `${labels[key]}: ${value}`
+}
+
+// Function to remove a filter
+const removeFilter = (key: keyof Filters) => {
+  filters[key] = ''
+  handleFilterChange()
+}
+
 onMounted(async () => {
   await fetchFilterOptions()
   // Initial fetch using route query parameters
@@ -164,96 +209,132 @@ onUnmounted(() => {
       <h1 class="text-2xl font-bold mb-4">Browse Perfumes</h1>
       
       <!-- Main Filters -->
-      <div class="grid grid-cols-1 md:grid-cols-[1.5fr,1fr,1fr,1fr,1fr,auto] gap-4 mb-6">
-        <!-- Search -->
-        <div>
-          <input
-            v-model="filters.q"
-            type="text"
-            placeholder="Search perfumes..."
-            @input="handleSearch"
-            class="w-full px-4 py-2 rounded-lg bg-background border border-input hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          />
+      <div class="space-y-6">
+        <!-- Search and Filters -->
+        <div class="grid grid-cols-1 md:grid-cols-[1.5fr,1fr,1fr,1fr,1fr,auto] gap-4">
+          <!-- Search -->
+          <div class="relative">
+            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+            </div>
+            <input
+              v-model="filters.q"
+              type="text"
+              placeholder="Search perfumes..."
+              @input="handleSearch"
+              class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-background border border-input hover:border-[#4A154B] dark:hover:border-white transition-all focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+            />
+          </div>
+
+          <!-- Gender Filter -->
+          <div class="relative select-wrapper">
+            <select
+              v-model="filters.gender"
+              @change="handleFilterChange"
+              class="w-full px-4 py-2.5 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-all focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white cursor-pointer"
+            >
+              <option value="">Any Gender</option>
+              <option v-for="gender in genderOptions" :key="gender" :value="gender">
+                {{ gender }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Category Filter -->
+          <div class="relative select-wrapper">
+            <select
+              v-model="filters.category"
+              @change="handleFilterChange"
+              class="w-full px-4 py-2.5 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-all focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white cursor-pointer"
+            >
+              <option value="">Any Category</option>
+              <option v-for="category in categoryOptions" :key="category" :value="category">
+                {{ category }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Brand Filter -->
+          <div class="relative select-wrapper">
+            <select
+              v-model="filters.brand"
+              @change="handleFilterChange"
+              class="w-full px-4 py-2.5 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-all focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white cursor-pointer"
+            >
+              <option value="">Any Brand</option>
+              <option v-for="brand in brandOptions" :key="brand" :value="brand">
+                {{ brand }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Country Filter -->
+          <div class="relative select-wrapper">
+            <select
+              v-model="filters.country"
+              @change="handleFilterChange"
+              class="w-full px-4 py-2.5 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-all focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white cursor-pointer"
+            >
+              <option value="">Any Country</option>
+              <option v-for="country in countryOptions" :key="country" :value="country">
+                {{ country }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Advanced Filters Toggle -->
+          <button
+            @click="showAdvancedFilters = !showAdvancedFilters"
+            class="w-10 h-[42px] rounded-lg border border-input flex items-center justify-center hover:border-[#4A154B] dark:hover:border-white transition-all focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+            :class="{ 'bg-accent text-accent-foreground': showAdvancedFilters }"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 6h18"/>
+              <path d="M7 12h10"/>
+              <path d="M10 18h4"/>
+            </svg>
+          </button>
         </div>
 
-        <!-- Gender Filter -->
-        <div class="relative select-wrapper">
-          <select
-            v-model="filters.gender"
-            @change="handleFilterChange"
-            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          >
-            <option value="">Any Gender</option>
-            <option v-for="gender in genderOptions" :key="gender" :value="gender">
-              {{ gender }}
-            </option>
-          </select>
+        <!-- Active Filters Area -->
+        <div class="min-h-[48px] transition-all">
+          <!-- Active Filters -->
+          <div v-if="activeFilters.length > 0" class="flex flex-wrap gap-2">
+            <div
+              v-for="filter in activeFilters"
+              :key="filter.key"
+              class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#4A154B] text-white text-sm"
+            >
+              <span>{{ filter.label }}</span>
+              <button
+                @click="removeFilter(filter.key as keyof Filters)"
+                class="hover:bg-white/20 rounded-full p-0.5 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                </svg>
+              </button>
+            </div>
+            <button
+              @click="(Object.keys(filters) as Array<keyof Filters>).forEach(key => filters[key] = ''); handleFilterChange()"
+              class="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-[#4A154B] text-[#4A154B] hover:bg-[#4A154B] hover:text-white transition-colors text-sm"
+            >
+              Clear All
+            </button>
+          </div>
         </div>
-
-        <!-- Category Filter -->
-        <div class="relative select-wrapper">
-          <select
-            v-model="filters.category"
-            @change="handleFilterChange"
-            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          >
-            <option value="">Any Category</option>
-            <option v-for="category in categoryOptions" :key="category" :value="category">
-              {{ category }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Brand Filter -->
-        <div class="relative select-wrapper">
-          <select
-            v-model="filters.brand"
-            @change="handleFilterChange"
-            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          >
-            <option value="">Any Brand</option>
-            <option v-for="brand in brandOptions" :key="brand" :value="brand">
-              {{ brand }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Country Filter -->
-        <div class="relative select-wrapper">
-          <select
-            v-model="filters.country"
-            @change="handleFilterChange"
-            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          >
-            <option value="">Any Country</option>
-            <option v-for="country in countryOptions" :key="country" :value="country">
-              {{ country }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Advanced Filters Toggle -->
-        <button
-          @click="showAdvancedFilters = !showAdvancedFilters"
-          class="w-10 h-10 rounded-lg border border-input flex items-center justify-center hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          :class="{ 'bg-accent': showAdvancedFilters }"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M3 6h18"/>
-            <path d="M7 12h10"/>
-            <path d="M10 18h4"/>
-          </svg>
-        </button>
       </div>
 
       <!-- Advanced Filters Panel -->

@@ -24,6 +24,11 @@ import {
   SunSnow
 } from 'lucide-vue-next'
 
+interface PerfumeNote {
+  note_type: 'top' | 'middle' | 'base'
+  note: string
+}
+
 const route = useRoute()
 const { getPerfumeById } = useApi()
 
@@ -103,6 +108,11 @@ const getAccordClass = (accordName: string) => {
   return classes[key] || 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100' // default styling
 }
 
+// Helper function to filter notes by type
+const filterNotesByType = (notes: PerfumeNote[] | undefined, type: 'top' | 'middle' | 'base') => {
+  return notes?.filter(n => n.note_type === type) || []
+}
+
 onMounted(async () => {
   try {
     const response = await getPerfumeById(route.params.id as string)
@@ -128,7 +138,7 @@ onMounted(async () => {
       </div>
 
 
-      <div v-else-if="perfume" class="mx-auto max-w-6xl">
+      <div v-else-if="perfume" class="">
         <!-- Breadcrumb -->
         <div class="mb-8 flex items-center space-x-2 text-sm text-muted-foreground">
           <NuxtLink to="/" class="hover:text-primary transition-colors inline-flex items-center gap-1">
@@ -149,7 +159,7 @@ onMounted(async () => {
           <p class="text-sm uppercase tracking-wider text-muted-foreground mb-2">{{ perfume.brand?.name }}</p>
           <h1 class="text-4xl font-light mb-2">{{ perfume.name }}</h1>
           <p v-if="perfume.perfumer" class="text-sm text-muted-foreground">
-            By {{ perfume.perfumer?.name }}
+            By {{ perfume.perfumer }}
           </p>
         </div>
 
@@ -160,7 +170,7 @@ onMounted(async () => {
               <img 
                 :src="`http://127.0.0.1:8000/static/${perfume.local_image_path?.replace('\\', '/')}`"
                 :alt="perfume.name"
-                class="w-full h-full object-cover rounded-lg shadow-lg"
+                class="w-full h-full object-cover rounded-lg"
               />
             </div>
           </div>
@@ -172,27 +182,27 @@ onMounted(async () => {
               <h2 class="text-sm uppercase tracking-wider mb-6">Main Accords</h2>
               <div class="flex flex-wrap gap-3">
                 <span 
-                  v-for="accord in perfume.main_accords" 
-                  :key="accord.id"
+                  v-for="(accord, index) in perfume.main_accords" 
+                  :key="index"
                   class="px-4 py-2 text-sm rounded-full transition-all"
-                  :class="getAccordClass(accord.name)"
+                  :class="getAccordClass(String(accord))"
                 >
-                  {{ accord.name.charAt(0).toUpperCase() + accord.name.slice(1) }}
+                  {{ String(accord).charAt(0).toUpperCase() + String(accord).slice(1) }}
                 </span>
               </div>
             </div>
 
             <!-- Notes Pyramid -->
             <div class="space-y-8">
-              <div v-if="perfume.top_notes?.length">
+              <div v-if="filterNotesByType(perfume?.perfume_notes, 'top').length">
                 <h2 class="text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Sparkles class="w-4 h-4" />
                   Top Notes
                 </h2>
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
                   <div 
-                    v-for="note in perfume.top_notes" 
-                    :key="note.id"
+                    v-for="note in filterNotesByType(perfume?.perfume_notes, 'top')" 
+                    :key="note.note"
                     class="flex flex-col items-center group"
                   >
                     <div class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all">
@@ -202,20 +212,20 @@ onMounted(async () => {
                         </svg>
                       </div>
                     </div>
-                    <span class="text-sm">{{ note.name.charAt(0).toUpperCase() + note.name.slice(1) }}</span>
+                    <span class="text-sm">{{ note.note.charAt(0).toUpperCase() + note.note.slice(1) }}</span>
                   </div>
                 </div>
               </div>
 
-              <div v-if="perfume.middle_notes?.length">
+              <div v-if="filterNotesByType(perfume?.perfume_notes, 'middle').length">
                 <h2 class="text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Heart class="w-4 h-4" />
                   Middle Notes
                 </h2>
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
                   <div 
-                    v-for="note in perfume.middle_notes" 
-                    :key="note.id"
+                    v-for="note in filterNotesByType(perfume?.perfume_notes, 'middle')" 
+                    :key="note.note"
                     class="flex flex-col items-center group"
                   >
                     <div class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all">
@@ -225,20 +235,20 @@ onMounted(async () => {
                         </svg>
                       </div>
                     </div>
-                    <span class="text-sm">{{ note.name.charAt(0).toUpperCase() + note.name.slice(1) }}</span>
+                    <span class="text-sm">{{ note.note.charAt(0).toUpperCase() + note.note.slice(1) }}</span>
                   </div>
                 </div>
               </div>
 
-              <div v-if="perfume.base_notes?.length">
+              <div v-if="filterNotesByType(perfume?.perfume_notes, 'base').length">
                 <h2 class="text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Flame class="w-4 h-4" />
                   Base Notes
                 </h2>
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
                   <div 
-                    v-for="note in perfume.base_notes" 
-                    :key="note.id"
+                    v-for="note in filterNotesByType(perfume?.perfume_notes, 'base')" 
+                    :key="note.note"
                     class="flex flex-col items-center group"
                   >
                     <div class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all">
@@ -248,7 +258,7 @@ onMounted(async () => {
                         </svg>
                       </div>
                     </div>
-                    <span class="text-sm">{{ note.name.charAt(0).toUpperCase() + note.name.slice(1) }}</span>
+                    <span class="text-sm">{{ note.note.charAt(0).toUpperCase() + note.note.slice(1) }}</span>
                   </div>
                 </div>
               </div>
@@ -288,7 +298,7 @@ onMounted(async () => {
                   <Droplets class="w-3 h-3" />
                   Type
                 </p>
-                <p>{{ perfume.type?.name }}</p>
+                <p>{{ perfume.type }}</p>
               </div>
               <div v-if="perfume.gender">
                 <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
@@ -302,14 +312,14 @@ onMounted(async () => {
                   <Flower2 class="w-3 h-3" />
                   Family
                 </p>
-                <p>{{ perfume.family?.name }}</p>
+                <p>{{ perfume.family }}</p>
               </div>
               <div v-if="perfume.concentration">
                 <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
                   <GlassWater class="w-3 h-3" />
                   Concentration
                 </p>
-                <p>{{ perfume.concentration?.name }}</p>
+                <p>{{ perfume.concentration}}</p>
               </div>
               <div v-if="perfume.release_year">
                 <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
