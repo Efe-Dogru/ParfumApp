@@ -12,11 +12,14 @@ export function useApi() {
   const getPerfumers = () => $axios.get('/api/v1/perfumers/')
   const getCountries = () => $axios.get('/api/v1/countries/')
   const getBrands = () => $axios.get('/api/v1/brands/')
+  const getNoteFamilies = () => $axios.get('/api/v1/notes/families/')
+  const getNoteMoods = () => $axios.get('/api/v1/notes/moods/')
   
   const searchPerfumes = (params: {
     q?: string,
     type?: string,
     family?: string,
+    category?: string,
     concentration?: string,
     gender?: string,
     brand?: string,
@@ -39,10 +42,28 @@ export function useApi() {
     
     return $axios.get(`/api/v1/perfumes/search/?${queryParams.toString()}`)
   }
-  const searchNotes = (query: string) => $axios.get(`/api/v1/notes/search/?query=${query}&limit=10`)
+  const searchNotes = (query: string) => $axios.get(`/api/v1/notes/search/?q=${query}&limit=10`)
 
-  const getNotes = (page: number = 1, limit: number = 42) => 
-    $axios.get(`/api/v1/notes/?skip=${(page - 1) * limit}&limit=${limit}`)
+  const getNotes = (params: {
+    page?: number,
+    limit?: number,
+    family?: string,
+    mood?: string
+  } = {}) => {
+    const { page = 1, limit = 42, ...filters } = params
+    const queryParams = new URLSearchParams()
+    
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) queryParams.append(key, String(value))
+    })
+    
+    // Add pagination
+    queryParams.append('skip', String((page - 1) * limit))
+    queryParams.append('limit', String(limit))
+    
+    return $axios.get(`/api/v1/notes/?${queryParams.toString()}`)
+  }
   const getNoteById = (id: string) => $axios.get(`/api/v1/notes/${id}`)
 
   return {
@@ -57,6 +78,8 @@ export function useApi() {
     getConcentrations,
     getPerfumers,
     getCountries,
-    getBrands
+    getBrands,
+    getNoteFamilies,
+    getNoteMoods
   }
 } 

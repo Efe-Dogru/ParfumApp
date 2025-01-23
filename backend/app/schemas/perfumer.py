@@ -1,13 +1,8 @@
 from pydantic import BaseModel
 
-class PerfumerBase(BaseModel):
-    name: str
-
-class PerfumerCreate(PerfumerBase):
-    pass
-
-class Perfumer(PerfumerBase):
+class Perfumer(BaseModel):
     id: int
+    name: str
 
     class Config:
         from_attributes = True 

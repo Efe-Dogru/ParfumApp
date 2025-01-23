@@ -37,7 +37,7 @@ onMounted(async () => {
         <div>
           <h1 class="text-4xl font-bold mb-2">{{ perfume.name }}</h1>
           <p class="text-xl text-muted-foreground">{{ perfume.brand?.name }}</p>
-          <p v-if="perfume.perfumer" class="text-sm text-muted-foreground mt-1">By {{ perfume.perfumer?.name }}</p>
+          <p v-if="perfume.perfumer" class="text-sm text-muted-foreground mt-1">By {{ perfume.perfumer   }}</p>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ onMounted(async () => {
             <div class="grid grid-cols-2 gap-4">
               <div v-if="perfume.type">
                 <p class="font-medium">Type</p>
-                <p class="text-muted-foreground">{{ perfume.type?.name }}</p>
+                <p class="text-muted-foreground">{{ perfume.type }}</p>
               </div>
               <div v-if="perfume.gender">
                 <p class="font-medium">Gender</p>
@@ -75,11 +75,11 @@ onMounted(async () => {
               </div>
               <div v-if="perfume.family">
                 <p class="font-medium">Family</p>
-                <p class="text-muted-foreground">{{ perfume.family?.name }}</p>
+                <p class="text-muted-foreground">{{ perfume.family }}</p>
               </div>
               <div v-if="perfume.concentration">
                 <p class="font-medium">Concentration</p>
-                <p class="text-muted-foreground">{{ perfume.concentration?.name }}</p>
+                <p class="text-muted-foreground">{{ perfume.concentration }}</p>
               </div>
               <div v-if="perfume.release_year">
                 <p class="font-medium">Release Year</p>
@@ -102,14 +102,14 @@ onMounted(async () => {
           <div v-if="perfume.main_accords?.length" class="border-b pb-6">
             <h2 class="text-2xl font-semibold mb-4">Main Accords</h2>
             <div class="flex flex-wrap gap-2">
-              <span 
+              <!-- <span 
                 v-for="accord in perfume.main_accords" 
                 :key="accord.id"
                 class="px-3 py-1 rounded-full bg-primary/10 text-primary"
               >
                 {{ accord.name.charAt(0).toUpperCase() + accord.name.slice(1) }}
 
-              </span>
+              </span> -->
             </div>
           </div>
 

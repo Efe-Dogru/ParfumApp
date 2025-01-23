@@ -52,6 +52,34 @@ onMounted(async () => {
           <div v-else class="aspect-square rounded-lg overflow-hidden bg-accent flex items-center justify-center">
             <span class="text-4xl text-accent-foreground">{{ note.name.charAt(0).toUpperCase() }}</span>
           </div>
+
+          <!-- Note Details -->
+          <div class="space-y-4">
+            <div v-if="note.description">
+              <h2 class="text-xl font-semibold mb-2">Description</h2>
+              <p class="text-muted-foreground">{{ note.description }}</p>
+            </div>
+
+            <div v-if="note.family">
+              <h2 class="text-xl font-semibold mb-2">Family</h2>
+              <p class="text-muted-foreground">{{ note.family }}</p>
+            </div>
+
+            <div v-if="note.source">
+              <h2 class="text-xl font-semibold mb-2">Source</h2>
+              <p class="text-muted-foreground">{{ note.source }}</p>
+            </div>
+
+            <div v-if="note.cultural_significance">
+              <h2 class="text-xl font-semibold mb-2">Cultural Significance</h2>
+              <p class="text-muted-foreground">{{ note.cultural_significance }}</p>
+            </div>
+
+            <div v-if="note.mood">
+              <h2 class="text-xl font-semibold mb-2">Mood</h2>
+              <p class="text-muted-foreground">{{ note.mood }}</p>
+            </div>
+          </div>
         </div>
 
         <div class="space-y-6">

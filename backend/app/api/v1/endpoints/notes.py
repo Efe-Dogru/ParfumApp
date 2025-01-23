@@ -1,121 +1,146 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
-from sqlalchemy.sql import func
+from sqlalchemy import select, or_, and_
+from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
-from app.models.note import Note as NoteModel
-from app.schemas.note import NoteCreate, NoteResponse
+from app.models.note import Note as NoteModel, NoteFamily as NoteFamilyModel, NoteMood as NoteMoodModel
+from app.schemas.note import Note, NoteFamily, NoteMood, NoteList
 
 router = APIRouter()
 
-@router.get("", response_model=List[NoteResponse])
-async def get_notes(
+@router.get("/families/", response_model=List[NoteFamily])
+async def get_note_families(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
     limit: int = 100
 ):
     """
-    Get all notes.
+    Get all note families.
     """
-    query = select(NoteModel).offset(skip).limit(limit)
+    query = select(NoteFamilyModel).offset(skip).limit(limit)
     result = await db.execute(query)
-    notes = result.scalars().all()
-    return notes
+    families = result.scalars().all()
+    return families
 
-@router.get("/search", response_model=List[NoteResponse])
-async def search_notes(
-    query: str,
+@router.get("/moods/", response_model=List[NoteMood])
+async def get_note_moods(
     db: AsyncSession = Depends(get_db),
+    skip: int = 0,
     limit: int = 100
 ):
     """
-    Search notes by name.
+    Get all note moods.
     """
-    search_query = f"%{query}%"
-    stmt = select(NoteModel).filter(
-        or_(
-            NoteModel.name.ilike(search_query),
-            NoteModel.normalized_name.ilike(search_query)
-        )
-    ).limit(limit)
-    
-    result = await db.execute(stmt)
-    notes = result.scalars().all()
-    return notes
+    query = select(NoteMoodModel).offset(skip).limit(limit)
+    result = await db.execute(query)
+    moods = result.scalars().all()
+    return moods
 
-@router.post("", response_model=NoteResponse)
-async def create_note(
-    note: NoteCreate,
-    db: AsyncSession = Depends(get_db)
+@router.get("/", response_model=List[NoteList])
+async def get_notes(
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    family: Optional[str] = None,
+    mood: Optional[str] = None
 ):
     """
-    Create a new note.
+    Get all notes with optional filtering by family and mood names.
+    Returns only id, name, and image_filename.
     """
-    # Create normalized name (lowercase version)
-    normalized_name = note.name.lower()
-    
-    # Check if note with this normalized name already exists
-    query = select(NoteModel).filter(NoteModel.normalized_name == normalized_name)
-    result = await db.execute(query)
-    existing_note = result.scalar_one_or_none()
-    
-    if existing_note:
-        raise HTTPException(
-            status_code=400,
-            detail="Note with this name already exists"
+    query = (
+        select(
+            NoteModel.id,
+            NoteModel.name,
+            NoteModel.image_filename
         )
-    
-    db_note = NoteModel(
-        name=note.name,
-        normalized_name=normalized_name,
-        image_filename=note.image_filename if hasattr(note, 'image_filename') else None
     )
-    db.add(db_note)
-    try:
-        await db.commit()
-        await db.refresh(db_note)
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail="Error creating note"
-        )
-    return db_note
+    
+    filters = []
+    
+    if family:
+        query = query.join(NoteFamilyModel)
+        filters.append(NoteFamilyModel.name.ilike(f"%{family}%"))
+    
+    if mood:
+        query = query.join(NoteModel.moods)
+        filters.append(NoteMoodModel.name.ilike(f"%{mood}%"))
+    
+    if filters:
+        query = query.filter(and_(*filters))
+    
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    return [{"id": id, "name": name, "image_filename": image_filename} for id, name, image_filename in result]
 
-@router.get("/{note_id}", response_model=NoteResponse)
+@router.get("/search/", response_model=List[NoteList])
+async def search_notes(
+    db: AsyncSession = Depends(get_db),
+    q: Optional[str] = None,
+    family: Optional[str] = None,
+    mood: Optional[str] = None,
+    limit: int = 100
+):
+    """
+    Search notes by name and filter by family and mood names.
+    Returns only id, name, and image_filename.
+    """
+    query = (
+        select(
+            NoteModel.id,
+            NoteModel.name,
+            NoteModel.image_filename
+        )
+    )
+    
+    filters = []
+    
+    if q:
+        filters.append(
+            or_(
+                NoteModel.name.ilike(f"%{q}%"),
+                NoteModel.normalized_name.ilike(f"%{q}%")
+            )
+        )
+    
+    if family:
+        query = query.join(NoteFamilyModel)
+        filters.append(NoteFamilyModel.name.ilike(f"%{family}%"))
+    
+    if mood:
+        query = query.join(NoteModel.moods)
+        filters.append(NoteMoodModel.name.ilike(f"%{mood}%"))
+    
+    if filters:
+        query = query.filter(and_(*filters))
+    
+    query = query.limit(limit)
+    result = await db.execute(query)
+    return [{"id": id, "name": name, "image_filename": image_filename} for id, name, image_filename in result]
+
+@router.get("/{note_id}", response_model=Note)
 async def get_note(
     note_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get a specific note by ID.
+    Returns full note details.
     """
-    query = select(NoteModel).filter(NoteModel.id == note_id)
+    query = (
+        select(NoteModel)
+        .options(
+            selectinload(NoteModel.family),
+            selectinload(NoteModel.moods)
+        )
+        .filter(NoteModel.id == note_id)
+    )
     result = await db.execute(query)
     note = result.scalar_one_or_none()
     
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
     
-    return note
-
-@router.delete("/{note_id}")
-async def delete_note(
-    note_id: int,
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Delete a note.
-    """
-    query = select(NoteModel).filter(NoteModel.id == note_id)
-    result = await db.execute(query)
-    note = result.scalar_one_or_none()
-    
-    if note is None:
-        raise HTTPException(status_code=404, detail="Note not found")
-    
-    await db.delete(note)
-    await db.commit()
-    return {"message": "Note deleted successfully"} 
+    return note 

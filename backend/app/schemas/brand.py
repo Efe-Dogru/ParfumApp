@@ -1,13 +1,8 @@
 from pydantic import BaseModel
 
-class BrandBase(BaseModel):
-    name: str
-
-class BrandCreate(BrandBase):
-    pass
-
-class Brand(BrandBase):
+class Brand(BaseModel):
     id: int
+    name: str
 
     class Config:
         from_attributes = True 

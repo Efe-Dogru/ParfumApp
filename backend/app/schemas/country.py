@@ -1,13 +1,8 @@
 from pydantic import BaseModel
 
-class CountryBase(BaseModel):
-    name: str
-
-class CountryCreate(CountryBase):
-    pass
-
-class Country(CountryBase):
+class Country(BaseModel):
     id: int
+    name: str
 
     class Config:
         from_attributes = True 

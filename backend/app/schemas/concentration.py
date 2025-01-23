@@ -1,13 +1,8 @@
 from pydantic import BaseModel
 
-class ConcentrationBase(BaseModel):
-    name: str
-
-class ConcentrationCreate(ConcentrationBase):
-    pass
-
-class Concentration(ConcentrationBase):
+class Concentration(BaseModel):
     id: int
+    name: str
 
     class Config:
         from_attributes = True 

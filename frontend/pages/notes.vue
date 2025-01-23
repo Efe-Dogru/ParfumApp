@@ -1,13 +1,53 @@
 <script setup lang="ts">
 import { useApi } from '~/composables/useApi'
 import type { Note } from '~/composables/useCommon'
+import { useRoute, useRouter } from 'vue-router'
 
-const { getNotes, searchNotes } = useApi()
+const route = useRoute()
+const router = useRouter()
+
+const { getNotes, searchNotes, getNoteFamilies, getNoteMoods } = useApi()
 const Notes = ref<Note[]>([])
 const loading = ref(true)
-const currentPage = ref(1)
+const currentPage = ref(parseInt(route.query.page as string) || 1)
 const itemsPerPage = 42 // 6 columns * 7 rows
-const searchQuery = ref('')
+const searchQuery = ref((route.query.q as string) || '')
+
+// Filter states initialized from route query
+const filters = reactive({
+  q: (route.query.q as string) || '',
+  family: (route.query.family as string) || '',
+  mood: (route.query.mood as string) || ''
+})
+
+// Filter options
+const familyOptions = ref<string[]>([])
+const moodOptions = ref<string[]>([])
+
+// Fetch filter options
+const fetchFilterOptions = async () => {
+  try {
+    const [familiesResponse, moodsResponse] = await Promise.all([
+      getNoteFamilies(),
+      getNoteMoods()
+    ])
+    familyOptions.value = familiesResponse.data.map((f: any) => f.name)
+    moodOptions.value = moodsResponse.data.map((m: any) => m.name)
+  } catch (error) {
+    console.error('Error fetching filter options:', error)
+  }
+}
+
+// Update URL with current state
+const updateUrlQuery = () => {
+  const query = {
+    page: currentPage.value.toString(),
+    ...Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== '')
+    )
+  }
+  router.push({ query })
+}
 
 const fetchNotes = async (page: number) => {
   loading.value = true
@@ -16,9 +56,15 @@ const fetchNotes = async (page: number) => {
       const response = await searchNotes(searchQuery.value)
       Notes.value = response.data
     } else {
-      const response = await getNotes(page, itemsPerPage)
+      const response = await getNotes({
+        page,
+        limit: itemsPerPage,
+        family: filters.family,
+        mood: filters.mood
+      })
       Notes.value = response.data
     }
+    updateUrlQuery()
   } catch (error) {
     console.error('Error fetching notes:', error)
   } finally {
@@ -56,6 +102,7 @@ const goToPage = (page: number) => {
 let searchTimeout: NodeJS.Timeout
 const handleSearch = (event: Event) => {
   const target = event.target as HTMLInputElement
+  filters.q = target.value
   searchQuery.value = target.value
   
   clearTimeout(searchTimeout)
@@ -65,8 +112,14 @@ const handleSearch = (event: Event) => {
   }, 500)
 }
 
+const handleFilterChange = () => {
+  currentPage.value = 1
+  fetchNotes(1)
+}
+
 onMounted(() => {
   fetchNotes(currentPage.value)
+  fetchFilterOptions()
 })
 
 onUnmounted(() => {
@@ -78,14 +131,46 @@ onUnmounted(() => {
   <div class="container mx-auto px-4 py-6">
     <h1 class="text-2xl font-bold mb-4">Browse Notes</h1>
     
-    <div class="mb-6 max-w-xl mx-auto">
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Search notes..."
-        @input="handleSearch"
-        class="w-full px-4 py-2 rounded-lg bg-background border border-input hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-      />
+    <!-- Main Filters -->
+    <div class="grid grid-cols-1 md:grid-cols-[1.5fr,1fr,1fr] gap-4 mb-6">
+      <!-- Search -->
+      <div>
+        <input
+          v-model="filters.q"
+          type="text"
+          placeholder="Search notes..."
+          @input="handleSearch"
+          class="w-full px-4 py-2 rounded-lg bg-background border border-input hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+        />
+      </div>
+
+      <!-- Family Filter -->
+      <div class="relative select-wrapper">
+        <select
+          v-model="filters.family"
+          @change="handleFilterChange"
+          class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+        >
+          <option value="">Any Family</option>
+          <option v-for="family in familyOptions" :key="family" :value="family">
+            {{ family }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Mood Filter -->
+      <div class="relative select-wrapper">
+        <select
+          v-model="filters.mood"
+          @change="handleFilterChange"
+          class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+        >
+          <option value="">Any Mood</option>
+          <option v-for="mood in moodOptions" :key="mood" :value="mood">
+            {{ mood }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <div v-if="loading" class="flex justify-center items-center py-8">
@@ -108,6 +193,7 @@ onUnmounted(() => {
           </div>
           <div class="p-2">
             <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ note.name }}</h2>
+            <p v-if="note.family" class="text-xs text-muted-foreground truncate">{{ note.family }}</p>
           </div>
         </NuxtLink>
       </div>
@@ -166,4 +252,24 @@ onUnmounted(() => {
       </nav>
     </div>
   </div>
-</template> 
+</template>
+
+<style scoped>
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid currentColor;
+  pointer-events: none;
+}
+</style> 

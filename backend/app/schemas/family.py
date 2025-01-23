@@ -1,13 +1,8 @@
 from pydantic import BaseModel
 
-class FamilyBase(BaseModel):
-    name: str
-
-class FamilyCreate(FamilyBase):
-    pass
-
-class Family(FamilyBase):
+class Family(BaseModel):
     id: int
+    name: str
 
     class Config:
         from_attributes = True 
