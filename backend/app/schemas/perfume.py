@@ -27,6 +27,7 @@ class PerfumeBase(BaseModel):
     gender: Optional[str] = None
     type_id: Optional[int] = None
     family_id: Optional[int] = None
+    category: Optional[str] = None
     release_year: Optional[int] = None
     country_id: Optional[int] = None
     description: Optional[str] = None

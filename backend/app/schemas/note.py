@@ -4,6 +4,11 @@ from pydantic import BaseModel
 class NoteBase(BaseModel):
     name: str
     image_filename: Optional[str] = None
+    description: Optional[str] = None
+    family: Optional[str] = None
+    source: Optional[str] = None
+    cultural_significance: Optional[str] = None
+    mood: Optional[str] = None
 
 class NoteCreate(NoteBase):
     pass

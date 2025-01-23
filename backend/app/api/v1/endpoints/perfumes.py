@@ -214,6 +214,7 @@ async def search_perfumes(
     brand: Optional[str] = None,
     type: Optional[str] = None,
     family: Optional[str] = None,
+    category: Optional[str] = None,
     concentration: Optional[str] = None,
     perfumer: Optional[str] = None,
     skip: int = 0,
@@ -227,9 +228,9 @@ async def search_perfumes(
     - brand: Filter by brand name
     - type: Filter by perfume type name
     - family: Filter by perfume family name
+    - category: Filter by perfume category
     - concentration: Filter by concentration name
     - perfumer: Filter by perfumer name
-
     """
     query = (
         select(PerfumeModel)
@@ -273,6 +274,10 @@ async def search_perfumes(
     # Family filter
     if family:
         filters.append(PerfumeModel.family.has(FamilyModel.name.ilike(f"%{family}%")))
+    
+    # Category filter
+    if category:
+        filters.append(PerfumeModel.category.ilike(f"%{category}%"))
     
     # Concentration filter
     if concentration:

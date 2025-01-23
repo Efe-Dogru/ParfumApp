@@ -34,7 +34,12 @@ interface Perfumer {
 export interface Note {
   id: number
   name: string
-  image_filename: string
+  image_filename?: string
+  description?: string
+  family?: string
+  source?: string
+  cultural_significance?: string
+  mood?: string
 }
 
 interface MainAccord {
@@ -51,6 +56,7 @@ export interface Perfume {
   local_image_path?: string
   gender?: string
   year?: string // ???
+  category: string,
 
   type_id: number
   family_id: number

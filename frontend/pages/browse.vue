@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 
-const { getPerfumes, searchPerfumes, getTypes, getFamilies, getConcentrations, getPerfumers, getCountries, getBrands } = useApi()
+const { searchPerfumes, getTypes, getFamilies, getConcentrations, getPerfumers, getCountries, getBrands } = useApi()
 const perfumes = ref<Perfume[]>([])
 const loading = ref(true)
 const currentPage = ref(parseInt(route.query.page as string) || 1)
@@ -17,23 +17,25 @@ const advancedFiltersRef = ref<HTMLElement | null>(null)
 // Filter states initialized from route query
 const filters = reactive({
   q: (route.query.q as string) || '',
+  gender: (route.query.gender as string) || '',
+  category: (route.query.category as string) || '',
+  brand: (route.query.brand as string) || '',
+  country: (route.query.country as string) || '',
   type: (route.query.type as string) || '',
   family: (route.query.family as string) || '',
   concentration: (route.query.concentration as string) || '',
-  gender: (route.query.gender as string) || '',
-  brand: (route.query.brand as string) || '',
-  perfumer: (route.query.perfumer as string) || '',
-  country: (route.query.country as string) || ''
+  perfumer: (route.query.perfumer as string) || ''
 })
 
 // Filter options
+const genderOptions = ['Male', 'Female', 'Unisex']
+const categoryOptions = ['Designer', 'Niche', 'Luxury']
+const brandOptions = ref<string[]>([])
+const countryOptions = ref<string[]>([])
 const typeOptions = ref<string[]>([])
 const familyOptions = ref<string[]>([])
 const concentrationOptions = ref<string[]>([])
-const genderOptions = ['Male', 'Female', 'Unisex']
 const perfumerOptions = ref<string[]>([])
-const countryOptions = ref<string[]>([])
-const brandOptions = ref<string[]>([])
 
 // Fetch filter options
 const fetchFilterOptions = async () => {
@@ -174,48 +176,6 @@ onUnmounted(() => {
           />
         </div>
 
-        <!-- Type Filter -->
-        <div class="relative select-wrapper">
-          <select
-            v-model="filters.type"
-            @change="handleFilterChange"
-            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          >
-            <option value="">Any Type</option>
-            <option v-for="type in typeOptions" :key="type" :value="type">
-              {{ type }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Family Filter -->
-        <div class="relative select-wrapper">
-          <select
-            v-model="filters.family"
-            @change="handleFilterChange"
-            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          >
-            <option value="">Any Family</option>
-            <option v-for="family in familyOptions" :key="family" :value="family">
-              {{ family }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Concentration Filter -->
-        <div class="relative select-wrapper">
-          <select
-            v-model="filters.concentration"
-            @change="handleFilterChange"
-            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-          >
-            <option value="">Any Concentration</option>
-            <option v-for="conc in concentrationOptions" :key="conc" :value="conc">
-              {{ conc }}
-            </option>
-          </select>
-        </div>
-
         <!-- Gender Filter -->
         <div class="relative select-wrapper">
           <select
@@ -226,6 +186,48 @@ onUnmounted(() => {
             <option value="">Any Gender</option>
             <option v-for="gender in genderOptions" :key="gender" :value="gender">
               {{ gender }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="relative select-wrapper">
+          <select
+            v-model="filters.category"
+            @change="handleFilterChange"
+            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          >
+            <option value="">Any Category</option>
+            <option v-for="category in categoryOptions" :key="category" :value="category">
+              {{ category }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Brand Filter -->
+        <div class="relative select-wrapper">
+          <select
+            v-model="filters.brand"
+            @change="handleFilterChange"
+            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          >
+            <option value="">Any Brand</option>
+            <option v-for="brand in brandOptions" :key="brand" :value="brand">
+              {{ brand }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Country Filter -->
+        <div class="relative select-wrapper">
+          <select
+            v-model="filters.country"
+            @change="handleFilterChange"
+            class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+          >
+            <option value="">Any Country</option>
+            <option v-for="country in countryOptions" :key="country" :value="country">
+              {{ country }}
             </option>
           </select>
         </div>
@@ -263,18 +265,52 @@ onUnmounted(() => {
         <div class="space-y-4">
           <h3 class="text-lg font-semibold mb-4">Advanced Filters</h3>
           
-          <!-- Brand Filter -->
+          <!-- Type Filter -->
           <div class="space-y-2">
-            <label class="text-sm font-medium">Brand</label>
+            <label class="text-sm font-medium">Type</label>
             <div class="relative select-wrapper">
               <select
-                v-model="filters.brand"
+                v-model="filters.type"
                 @change="handleFilterChange"
                 class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
               >
-                <option value="">Any Brand</option>
-                <option v-for="brand in brandOptions" :key="brand" :value="brand">
-                  {{ brand }}
+                <option value="">Any Type</option>
+                <option v-for="type in typeOptions" :key="type" :value="type">
+                  {{ type }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Family Filter -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Family</label>
+            <div class="relative select-wrapper">
+              <select
+                v-model="filters.family"
+                @change="handleFilterChange"
+                class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+              >
+                <option value="">Any Family</option>
+                <option v-for="family in familyOptions" :key="family" :value="family">
+                  {{ family }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Concentration Filter -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Concentration</label>
+            <div class="relative select-wrapper">
+              <select
+                v-model="filters.concentration"
+                @change="handleFilterChange"
+                class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
+              >
+                <option value="">Any Concentration</option>
+                <option v-for="conc in concentrationOptions" :key="conc" :value="conc">
+                  {{ conc }}
                 </option>
               </select>
             </div>
@@ -292,23 +328,6 @@ onUnmounted(() => {
                 <option value="">Any Perfumer</option>
                 <option v-for="perfumer in perfumerOptions" :key="perfumer" :value="perfumer">
                   {{ perfumer }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Country Filter -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium">Country</label>
-            <div class="relative select-wrapper">
-              <select
-                v-model="filters.country"
-                @change="handleFilterChange"
-                class="w-full px-4 py-2 rounded-lg bg-background border border-input appearance-none hover:border-[#4A154B] dark:hover:border-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-              >
-                <option value="">Any Country</option>
-                <option v-for="country in countryOptions" :key="country" :value="country">
-                  {{ country }}
                 </option>
               </select>
             </div>

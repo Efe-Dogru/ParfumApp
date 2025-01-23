@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
@@ -14,12 +14,22 @@ router = APIRouter()
 async def get_notes(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    family: Optional[str] = None,
+    mood: Optional[str] = None
 ):
     """
-    Get all notes.
+    Get all notes with optional filtering by family and mood.
     """
-    query = select(NoteModel).offset(skip).limit(limit)
+    query = select(NoteModel)
+    
+    # Apply filters if provided
+    if family:
+        query = query.filter(NoteModel.family.ilike(f"%{family}%"))
+    if mood:
+        query = query.filter(NoteModel.mood.ilike(f"%{mood}%"))
+    
+    query = query.offset(skip).limit(limit)
     result = await db.execute(query)
     notes = result.scalars().all()
     return notes
@@ -70,7 +80,12 @@ async def create_note(
     db_note = NoteModel(
         name=note.name,
         normalized_name=normalized_name,
-        image_filename=note.image_filename if hasattr(note, 'image_filename') else None
+        image_filename=note.image_filename,
+        description=note.description,
+        family=note.family,
+        source=note.source,
+        cultural_significance=note.cultural_significance,
+        mood=note.mood
     )
     db.add(db_note)
     try:

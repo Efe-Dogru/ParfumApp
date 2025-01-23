@@ -29,6 +29,7 @@ class Perfume(Base):
     gender = Column(String(50))
     type_id = Column(Integer, ForeignKey('type.id'))
     family_id = Column(Integer, ForeignKey('family.id'))
+    category = Column(String(255))
     release_year = Column(Integer)
     country_id = Column(Integer, ForeignKey('country.id'))
     description = Column(Text)
