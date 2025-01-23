@@ -45,6 +45,7 @@ export interface Note {
 export interface PerfumeNote {
   note_type: 'top' | 'middle' | 'base'
   note: string
+  image_filename?: string
 }
 
 interface MainAccord {

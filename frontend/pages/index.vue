@@ -189,7 +189,7 @@ onUnmounted(() => {
             <div class="flex flex-col items-center">
               <span>Discover Your</span>
               <div class="flex items-center gap-3">
-                <div class="relative h-[1.2em] w-[200px] overflow-hidden">
+                <!-- <div class="relative h-[1.2em] w-[200px] overflow-hidden">
                   <TransitionGroup name="slide" tag="div" class="absolute inset-0 flex justify-center items-center">
                     <span
                       v-for="(title, index) in titles"
@@ -200,8 +200,8 @@ onUnmounted(() => {
                       {{ title }}
                     </span>
                   </TransitionGroup>
-                </div>
-                <span>Fragrance</span>
+                </div> -->
+                <span>Next Fragrance</span>
               </div>
             </div>
           </h1>
@@ -210,7 +210,7 @@ onUnmounted(() => {
           </p>
 
           <div class="mt-12 w-full max-w-5xl mx-auto">
-            <div class="flex bg-background/80 backdrop-blur-sm rounded-full shadow-lg border">
+            <div class="flex bg-background/80 backdrop-blur-sm rounded-full shadow-lg border border-[#18181B] dark:border-white">
               <div class="flex items-center px-4 w-[400px]">
                 <Search class="w-6 h-6 text-gray-600 mr-2" />
                 <input
@@ -219,7 +219,7 @@ onUnmounted(() => {
                   class="bg-transparent border-none focus:outline-none py-4 w-full"
                 />
               </div>
-              <div class="flex items-center px-4 w-[300px] border-l border-gray-200">
+              <div class="flex items-center px-4 w-[300px] border-l border-[#18181B] dark:border-white">
                 <Tag class="w-6 h-6 text-gray-600 mr-2 shrink-0" />
                 <div id="notes-container" class="relative w-[250px]">
                   <div 
@@ -278,7 +278,7 @@ onUnmounted(() => {
                   </div>
                 </div>
               </div>
-              <div class="flex items-center px-4 w-[300px] border-l border-gray-200">
+              <div class="flex items-center px-4 w-[300px] border-l border-[#18181B] dark:border-white">
                 <Store class="w-6 h-6 text-gray-600 mr-2 shrink-0" />
                 <div id="brands-container" class="relative w-[250px]">
                   <div 
@@ -337,8 +337,8 @@ onUnmounted(() => {
                   </div>
                 </div>
               </div>
-              <div class="flex items-center border-l border-gray-200">
-                <button class="px-8 py-4 bg-[#18181B] text-white rounded-r-full hover:bg-[#18181B]/90 transition-colors">
+              <div class="flex items-center border-l border-[#18181B] dark:border-white">
+                <button class="px-8 py-4 bg-[#18181B] text-white rounded-r-full hover:bg-[#18181B]/90 transition-colors dark:bg-white dark:text-[#18181B] dark:hover:bg-white/90">
                   Search
                 </button>
               </div>

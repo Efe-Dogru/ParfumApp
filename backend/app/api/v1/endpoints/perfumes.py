@@ -200,7 +200,8 @@ async def get_perfume(
         "perfume_notes": [
             {
                 "note_type": note.note_type,
-                "note": note.note.name
+                "note": note.note.name,
+                "image_filename": note.note.image_filename if note.note else None
             }
             for note in perfume.perfume_notes
         ] if perfume.perfume_notes else [],

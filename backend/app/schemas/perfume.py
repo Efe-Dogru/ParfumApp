@@ -19,6 +19,7 @@ class Tag(BaseModel):
 class PerfumeNote(BaseModel):
     note_type: str  # 'top', 'middle', or 'base'
     note: str
+    image_filename: Optional[str] = None
 
     class Config:
         from_attributes = True

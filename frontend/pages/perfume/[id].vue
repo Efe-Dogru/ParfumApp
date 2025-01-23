@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useApi } from '~/composables/useApi'
-import type { Perfume } from '~/composables/useCommon'
+import type { Perfume, PerfumeNote } from '~/composables/useCommon'
 import { 
   Home, 
   Search, 
@@ -23,11 +23,6 @@ import {
   Info,
   SunSnow
 } from 'lucide-vue-next'
-
-interface PerfumeNote {
-  note_type: 'top' | 'middle' | 'base'
-  note: string
-}
 
 const route = useRoute()
 const { getPerfumeById } = useApi()
@@ -207,7 +202,13 @@ onMounted(async () => {
                   >
                     <div class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all">
                       <div class="w-full h-full flex items-center justify-center text-muted-foreground group-hover:scale-110 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <img 
+                          v-if="note.image_filename"
+                          :src="`http://127.0.0.1:8000/static/notes_images/${note.image_filename}`"
+                          :alt="note.note"
+                          class="w-full h-full object-cover"
+                        />
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
                       </div>
@@ -230,7 +231,13 @@ onMounted(async () => {
                   >
                     <div class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all">
                       <div class="w-full h-full flex items-center justify-center text-muted-foreground group-hover:scale-110 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <img 
+                          v-if="note.image_filename"
+                          :src="`http://127.0.0.1:8000/static/notes_images/${note.image_filename}`"
+                          :alt="note.note"
+                          class="w-full h-full object-cover"
+                        />
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                       </div>
@@ -253,7 +260,13 @@ onMounted(async () => {
                   >
                     <div class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all">
                       <div class="w-full h-full flex items-center justify-center text-muted-foreground group-hover:scale-110 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <img 
+                          v-if="note.image_filename"
+                          :src="`http://127.0.0.1:8000/static/notes_images/${note.image_filename}`"
+                          :alt="note.note"
+                          class="w-full h-full object-cover"
+                        />
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                       </div>
