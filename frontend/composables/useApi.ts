@@ -25,6 +25,7 @@ export function useApi() {
     brand?: string,
     perfumer?: string,
     country?: string,
+    tag?: string,
     page?: number,
     limit?: number
   }) => {

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import InteractiveHoverButton from '../components/ui/InteractiveHoverButton.vue'
+import { useApi } from '~/composables/useApi'
+import type { Perfume } from '~/composables/useCommon'
 import { Droplets, Star, Package, Sparkles, TrendingUp, Search, MapPin, Calendar, Clock, Tag, Store } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const { searchPerfumes } = useApi()
 const selectedCategory = ref('')
 const searchQuery = ref('')
 const isNotesDropdownOpen = ref(false)
@@ -14,11 +17,7 @@ const isBrandsDropdownOpen = ref(false)
 const brandsSearchQuery = ref('')
 const selectedBrands = ref<string[]>([])
 
-const categories = [
-  { name: 'Perfumes', icon: Droplets, path: '/browse', placeholder: 'Search for perfumes...' },
-  { name: 'Brands', icon: Star, path: '/brands', placeholder: 'Search for brands...' },
-  { name: 'Collections', icon: Package, path: '/collections', placeholder: 'Search for collections...' }
-]
+
 
 const mockNotes = [
   'Vanilla', 'Rose', 'Oud', 'Bergamot', 'Jasmine', 
@@ -71,17 +70,6 @@ const toggleBrand = (brand: string) => {
   }
 }
 
-const handleSearch = () => {
-  if (!searchQuery.value) return
-  
-  const category = categories.find(c => c.name === selectedCategory.value)
-  if (category) {
-    router.push({
-      path: category.path,
-      query: { search: searchQuery.value }
-    })
-  }
-}
 
 useHead({
   title: 'Home - Parfum App',
@@ -130,7 +118,48 @@ const openBrandsDropdown = () => {
   isBrandsDropdownOpen.value = true
 }
 
+// Add new refs for each section
+const trendingPerfumes = ref<Perfume[]>([])
+const topRatedPerfumes = ref<Perfume[]>([])
+const mostLovedPerfumes = ref<Perfume[]>([])
+const hiddenGemPerfumes = ref<Perfume[]>([])
+const loading = ref(true)
+
+// Function to fetch perfumes by tag
+const fetchPerfumesByTag = async (tag: string) => {
+  try {
+    const response = await searchPerfumes({ tag, limit: 5 })
+    return response.data
+  } catch (error) {
+    console.error(`Error fetching ${tag} perfumes:`, error)
+    return []
+  }
+}
+
+// Fetch all sections data
+const fetchAllSections = async () => {
+  loading.value = true
+  try {
+    const [trending, topRated, mostLoved, hiddenGems] = await Promise.all([
+      fetchPerfumesByTag('trending_now'),
+      fetchPerfumesByTag('top_rated'),
+      fetchPerfumesByTag('most_loved'),
+      fetchPerfumesByTag('hidden_gem')
+    ])
+    
+    trendingPerfumes.value = trending
+    topRatedPerfumes.value = topRated
+    mostLovedPerfumes.value = mostLoved
+    hiddenGemPerfumes.value = hiddenGems
+  } catch (error) {
+    console.error('Error fetching sections:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(() => {
+  fetchAllSections()
   interval = setInterval(updateTitle, 4000)
   window.addEventListener('mousemove', updateMousePosition)
   updateFollowerPosition()
@@ -219,7 +248,7 @@ onUnmounted(() => {
                   class="bg-transparent border-none focus:outline-none py-4 w-full"
                 />
               </div>
-              <div class="flex items-center px-4 w-[300px] border-l border-[#18181B] dark:border-white">
+              <div class="flex items-center px-4 w-[300px] border-l">
                 <Tag class="w-6 h-6 text-gray-600 mr-2 shrink-0" />
                 <div id="notes-container" class="relative w-[250px]">
                   <div 
@@ -278,7 +307,7 @@ onUnmounted(() => {
                   </div>
                 </div>
               </div>
-              <div class="flex items-center px-4 w-[300px] border-l border-[#18181B] dark:border-white">
+              <div class="flex items-center px-4 w-[300px] border-l ">
                 <Store class="w-6 h-6 text-gray-600 mr-2 shrink-0" />
                 <div id="brands-container" class="relative w-[250px]">
                   <div 
@@ -356,93 +385,115 @@ onUnmounted(() => {
     <div class="w-full bg-background relative z-10">
       <div class="container mx-auto px-4">
         <section class="py-12">
-          <div class="mb-12">
-            <h2 class="mb-8 text-2xl font-bold tracking-tight">Featured Perfumes</h2>
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <!-- Placeholder for featured perfumes -->
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
-              </div>
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
-              </div>
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
+          <!-- Loading State -->
+          <div v-if="loading" class="flex justify-center items-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+
+          <!-- No Results State -->
+          <div v-else-if="!trendingPerfumes.length && !topRatedPerfumes.length && !mostLovedPerfumes.length && !hiddenGemPerfumes.length" 
+               class="text-center py-8">
+            <p class="text-lg text-muted-foreground">No perfumes found</p>
+          </div>
+
+          <div v-else>
+            <!-- Trending Now Section -->
+            <div class="mb-12" v-if="trendingPerfumes.length > 0">
+              <h2 class="mb-8 text-2xl font-bold tracking-tight">Trending Now</h2>
+              <div class="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                <NuxtLink 
+                  v-for="perfume in trendingPerfumes" 
+                  :key="perfume.id" 
+                  :to="`/perfume/${perfume.id}`" 
+                  class="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-card"
+                >
+                  <div class="aspect-square w-full">
+                    <img 
+                      :src="`http://127.0.0.1:8000/static/${perfume.local_image_path?.replace('\\', '/')}`"
+                      :alt="perfume.name"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div class="p-2">
+                    <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ perfume.name + ' ' + perfume.concentration }}</h2>
+                    <p class="text-xs text-muted-foreground truncate">{{ perfume.brand?.name }}</p>
+                  </div>
+                </NuxtLink>
               </div>
             </div>
-          </div>
-          <div class="mb-16">
-            <h2 class="mb-8 text-2xl font-bold tracking-tight">Newest Perfumes</h2>
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <!-- Placeholder for featured perfumes -->
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
-              </div>
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
-              </div>
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
+
+            <!-- Top Rated Section -->
+            <div class="mb-12" v-if="topRatedPerfumes.length > 0">
+              <h2 class="mb-8 text-2xl font-bold tracking-tight">Top Rated</h2>
+              <div class="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                <NuxtLink 
+                  v-for="perfume in topRatedPerfumes" 
+                  :key="perfume.id" 
+                  :to="`/perfume/${perfume.id}`" 
+                  class="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-card"
+                >
+                  <div class="aspect-square w-full">
+                    <img 
+                      :src="`http://127.0.0.1:8000/static/${perfume.local_image_path?.replace('\\', '/')}`"
+                      :alt="perfume.name"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div class="p-2">
+                    <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ perfume.name + ' ' + perfume.concentration }}</h2>
+                    <p class="text-xs text-muted-foreground truncate">{{ perfume.brand?.name }}</p>
+                  </div>
+                </NuxtLink>
               </div>
             </div>
-          </div>
-          <div class="mb-12">
-            <h2 class="mb-8 text-2xl font-bold tracking-tight">Most Popular Perfumes</h2>
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <!-- Placeholder for featured perfumes -->
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
+
+            <!-- Most Loved Section -->
+            <div class="mb-12" v-if="mostLovedPerfumes.length > 0">
+              <h2 class="mb-8 text-2xl font-bold tracking-tight">Most Loved</h2>
+              <div class="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                <NuxtLink 
+                  v-for="perfume in mostLovedPerfumes" 
+                  :key="perfume.id" 
+                  :to="`/perfume/${perfume.id}`" 
+                  class="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-card"
+                >
+                  <div class="aspect-square w-full">
+                    <img 
+                      :src="`http://127.0.0.1:8000/static/${perfume.local_image_path?.replace('\\', '/')}`"
+                      :alt="perfume.name"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div class="p-2">
+                    <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ perfume.name + ' ' + perfume.concentration }}</h2>
+                    <p class="text-xs text-muted-foreground truncate">{{ perfume.brand?.name }}</p>
+                  </div>
+                </NuxtLink>
               </div>
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
-              </div>
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                  <h3 class="text-lg font-semibold">Coming Soon</h3>
-                  <p class="text-sm text-muted-foreground">
-                    Featured perfumes will be displayed here
-                  </p>
-                </div>
+            </div>
+
+            <!-- Hidden Gems Section -->
+            <div class="mb-12" v-if="hiddenGemPerfumes.length > 0">
+              <h2 class="mb-8 text-2xl font-bold tracking-tight">Hidden Gems</h2>
+              <div class="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                <NuxtLink 
+                  v-for="perfume in hiddenGemPerfumes" 
+                  :key="perfume.id" 
+                  :to="`/perfume/${perfume.id}`" 
+                  class="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-card"
+                >
+                  <div class="aspect-square w-full">
+                    <img 
+                      :src="`http://127.0.0.1:8000/static/${perfume.local_image_path?.replace('\\', '/')}`"
+                      :alt="perfume.name"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div class="p-2">
+                    <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ perfume.name + ' ' + perfume.concentration }}</h2>
+                    <p class="text-xs text-muted-foreground truncate">{{ perfume.brand?.name }}</p>
+                  </div>
+                </NuxtLink>
               </div>
             </div>
           </div>
