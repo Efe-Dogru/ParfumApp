@@ -12,6 +12,8 @@ export function useApi() {
   const getPerfumers = () => $axios.get('/api/v1/perfumers/')
   const getCountries = () => $axios.get('/api/v1/countries/')
   const getBrands = () => $axios.get('/api/v1/brands/')
+  const getNoteFamilies = () => $axios.get('/api/v1/notes/families/')
+  const getNoteMoods = () => $axios.get('/api/v1/notes/moods/')
   
   const searchPerfumes = (params: {
     q?: string,
@@ -40,7 +42,7 @@ export function useApi() {
     
     return $axios.get(`/api/v1/perfumes/search/?${queryParams.toString()}`)
   }
-  const searchNotes = (query: string) => $axios.get(`/api/v1/notes/search/?query=${query}&limit=10`)
+  const searchNotes = (query: string) => $axios.get(`/api/v1/notes/search/?q=${query}&limit=10`)
 
   const getNotes = (params: {
     page?: number,
@@ -76,6 +78,8 @@ export function useApi() {
     getConcentrations,
     getPerfumers,
     getCountries,
-    getBrands
+    getBrands,
+    getNoteFamilies,
+    getNoteMoods
   }
 } 

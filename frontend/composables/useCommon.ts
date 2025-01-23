@@ -43,7 +43,7 @@ export interface Note {
 }
 
 interface MainAccord {
-  id: number
+  id: string
   name: string
 }
 
@@ -52,7 +52,7 @@ export interface Perfume {
   id: number
   name: string
   brand_id: number
-  concentration_id: number
+  concentration: string
   local_image_path?: string
   gender?: string
   year?: string // ???
@@ -75,7 +75,6 @@ export interface Perfume {
 
   // Relationships (same order as backend)
   brand?: Brand
-  concentration?: Concentration
   type?: Type
   family?: Family
   country?: Country

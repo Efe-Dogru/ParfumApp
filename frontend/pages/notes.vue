@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 
-const { getNotes, searchNotes } = useApi()
+const { getNotes, searchNotes, getNoteFamilies, getNoteMoods } = useApi()
 const Notes = ref<Note[]>([])
 const loading = ref(true)
 const currentPage = ref(parseInt(route.query.page as string) || 1)
@@ -21,14 +21,22 @@ const filters = reactive({
 })
 
 // Filter options
-const familyOptions = [
-  'Floral', 'Woody', 'Fresh', 'Oriental', 'Aromatic', 'Citrus', 
-  'Fruity', 'Green', 'Spicy', 'Sweet', 'Earthy', 'Musky'
-]
-const moodOptions = [
-  'Romantic', 'Fresh', 'Energetic', 'Relaxing', 'Sensual', 
-  'Mysterious', 'Elegant', 'Playful', 'Sophisticated', 'Cozy'
-]
+const familyOptions = ref<string[]>([])
+const moodOptions = ref<string[]>([])
+
+// Fetch filter options
+const fetchFilterOptions = async () => {
+  try {
+    const [familiesResponse, moodsResponse] = await Promise.all([
+      getNoteFamilies(),
+      getNoteMoods()
+    ])
+    familyOptions.value = familiesResponse.data.map((f: any) => f.name)
+    moodOptions.value = moodsResponse.data.map((m: any) => m.name)
+  } catch (error) {
+    console.error('Error fetching filter options:', error)
+  }
+}
 
 // Update URL with current state
 const updateUrlQuery = () => {
@@ -111,6 +119,7 @@ const handleFilterChange = () => {
 
 onMounted(() => {
   fetchNotes(currentPage.value)
+  fetchFilterOptions()
 })
 
 onUnmounted(() => {

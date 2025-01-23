@@ -355,7 +355,7 @@ onUnmounted(() => {
             />
           </div>
           <div class="p-2">
-            <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ perfume.name + ' ' + perfume.concentration?.name}}</h2>
+            <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ perfume.name + ' ' + perfume.concentration}}</h2>
             <p class="text-xs text-muted-foreground truncate">{{ perfume.brand?.name }}</p>
           </div>
         </NuxtLink>

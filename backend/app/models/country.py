@@ -1,8 +1,11 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 class Country(Base):
     __tablename__ = "country"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(255), unique=True, nullable=False) 
+    name = Column(String(255), unique=True, nullable=False)
+    
+    perfumes = relationship("Perfume", back_populates="country") 
