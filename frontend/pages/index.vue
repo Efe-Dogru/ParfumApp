@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import InteractiveHoverButton from '../components/ui/InteractiveHoverButton.vue'
 import { useApi } from '~/composables/useApi'
 import type { Perfume } from '~/composables/useCommon'
-import { Droplets, Star, Package, Sparkles, TrendingUp, Search, MapPin, Calendar, Clock, Tag, Store } from 'lucide-vue-next'
+import { Tag, Store } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
