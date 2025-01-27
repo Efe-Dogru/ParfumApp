@@ -12,7 +12,7 @@ const navItems = [
 </script>
 <template>
     <div>
-      <div class="mb-16">
+      <div class="mb-24">
         <TubelightNavbar :items="navItems"/>
       </div>
         <main>
