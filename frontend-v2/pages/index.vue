@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-const client = useSupabaseClient()
+import { usePerfumes } from '@/composables/usePerfumes'
 
-const { data } = await useAsyncData('perfumes', async () => {
-    return await client.from('perfumes').select('id, name').limit(5)
-})
-console.log(data.value)
+const { getPerfumes } = usePerfumes()
+const perfumes = await getPerfumes()
 
+console.log(perfumes.value)
 </script>
 
 <template>
-    
+    <div>
+        <h1>Home</h1>
+    </div>
 </template>
