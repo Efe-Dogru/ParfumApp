@@ -1,43 +1,100 @@
-<template>
-  <div class="min-h-screen bg-background">
-    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div class="container flex h-14 items-center">
-        <NuxtLink to="/" class="mr-6 flex items-center space-x-2">
-          <span class="font-bold">Parfum App</span>
-        </NuxtLink>
-        <nav class="flex items-center space-x-6 text-sm font-medium">
-          <NuxtLink
-            to="/"
-            class="transition-colors hover:text-foreground/80 text-foreground"
-          >
-            Home
-          </NuxtLink>
-          <NuxtLink
-            to="/browse"
-            class="transition-colors hover:text-foreground/80 text-foreground"
-          >
-            Browse
-          </NuxtLink>
-          <NuxtLink
-            to="/search"
-            class="transition-colors hover:text-foreground/80 text-foreground"
-          >
-            Search
-          </NuxtLink>
-        </nav>
-      </div>
-    </header>
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { Home, User, Briefcase, Search } from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
+import TubelightNavbar from '@/components/ui/TubelightNavbar.vue'
+import FooterSection from '@/components/ui/FooterSection.vue'
+import SearchInput from '@/components/ui/SearchInput.vue'
 
-    <main class="container py-6">
+const route = useRoute()
+const isIndexPage = computed(() => {
+  const isIndex = route.path === '/' || route.path === ''
+  return isIndex
+})
+
+interface Perfume {
+  id: number
+  name: string
+  brand: string
+  year: string
+  image_url: string
+}
+
+const searchQuery = ref('')
+const isSearchOpen = ref(false)
+const searchResults = ref<Perfume[]>([])
+const isLoading = ref(false)
+
+const { searchPerfumes } = useApi()
+
+const navItems = [
+  { name: 'Home', url: '/', icon: Home },
+  { name: 'Perfumes', url: '/browse', icon: Search },
+  { name: 'Notes', url: '/notes', icon: User },
+  { name: 'Feedback', url: '/feedback', icon: User },
+  { name: 'About', url: '/about', icon: User },
+]
+
+const fetchSearchResults = async (query: string) => {
+  if (!query) {
+    searchResults.value = []
+    return
+  }
+  
+  try {
+    isLoading.value = true
+    const { data } = await searchPerfumes({ q: query })
+    searchResults.value = data
+  } catch (error) {
+    console.error('Search error:', error)
+    searchResults.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Debounced search
+let searchTimeout: NodeJS.Timeout
+const handleSearch = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  searchQuery.value = target.value
+  isSearchOpen.value = !!target.value
+  
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    fetchSearchResults(target.value)
+  }, 500)
+}
+
+onMounted(() => {
+  // Close search dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    const searchContainer = document.querySelector('.search-container')
+    if (searchContainer && !searchContainer.contains(e.target as Node)) {
+      isSearchOpen.value = false
+    }
+  })
+})
+
+// Cleanup
+onUnmounted(() => {
+  clearTimeout(searchTimeout)
+})
+</script>
+
+<template>
+  <div class="min-h-screen bg-background text-foreground">
+    <!-- Header with TubelightNavbar -->
+    <div :class="{ 'mb-16': !isIndexPage }">
+      <TubelightNavbar :items="navItems" :is-index-page="isIndexPage" class="" />
+    </div>
+
+    <!-- Main content -->
+    <main>
       <slot />
     </main>
 
-    <footer class="border-t py-6 md:py-0">
-      <div class="container flex h-14 items-center">
-        <p class="text-sm text-foreground/60">
-          &copy; {{ new Date().getFullYear() }} Parfum App. All rights reserved.
-        </p>
-      </div>
-    </footer>
+    <!-- Footer -->
+    <FooterSection />
   </div>
 </template> 

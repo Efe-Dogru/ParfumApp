@@ -9,7 +9,9 @@ package-lock.json
 .nitro
 .cache
 dist
-
+assets/images
+assets/perfume_images_male
+assets/perfume_images_female
 # Node
 npm-debug.log*
 yarn-debug.log*

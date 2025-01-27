@@ -1,38 +1,39 @@
-from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
-from app.models.note import NoteType
+from pydantic import BaseModel
 
-# Shared properties
-class NoteBase(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
-    category: Optional[str] = Field(None, max_length=100)
-
-# Properties to receive on note creation
-class NoteCreate(NoteBase):
-    pass
-
-# Properties to receive on note update
-class NoteUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
-    category: Optional[str] = Field(None, max_length=100)
-
-# Properties shared by models stored in DB
-class NoteInDBBase(NoteBase):
+class NoteFamily(BaseModel):
     id: int
-    created_at: datetime
-    updated_at: datetime
+    name: str
 
     class Config:
         from_attributes = True
 
-# Properties to return to client
-class NoteResponse(NoteInDBBase):
-    pass
+class NoteMood(BaseModel):
+    id: int
+    name: str
 
-# Schema for adding a note to a perfume
-class PerfumeNoteCreate(BaseModel):
-    note_id: int
-    note_type: NoteType 
+    class Config:
+        from_attributes = True
+
+class Note(BaseModel):
+    id: int
+    name: str
+    normalized_name: str
+    image_filename: Optional[str] = None
+    description: Optional[str] = None
+    source: Optional[str] = None
+    cultural_significance: Optional[str] = None
+    family_id: Optional[int] = None
+    family: Optional[NoteFamily] = None
+    moods: List[NoteMood] = []
+
+    class Config:
+        from_attributes = True
+
+class NoteList(BaseModel):
+    id: int
+    name: str
+    image_filename: Optional[str] = None
+
+    class Config:
+        from_attributes = True 

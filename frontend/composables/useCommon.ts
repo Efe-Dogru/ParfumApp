@@ -1,17 +1,95 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 
-export interface Perfume {
-  id: number | string
+interface Brand {
+  id: number
   name: string
-  description: string
-  brand?: string
-  year?: number
-  notes?: {
-    top: string[]
-    heart: string[]
-    base: string[]
-  }
+}
+
+interface Type {
+  id: number
+  name: string
+}
+
+interface Family {
+  id: number
+  name: string
+}
+
+interface Concentration {
+  id: number
+  name: string
+}
+
+interface Country {
+  id: number
+  name: string
+}
+
+interface Perfumer {
+  id: number
+  name: string
+}
+
+export interface Note {
+  id: number
+  name: string
+  image_filename?: string
+  description?: string
+  family?: string
+  source?: string
+  cultural_significance?: string
+  mood?: string
+}
+
+export interface PerfumeNote {
+  note_type: 'top' | 'middle' | 'base'
+  note: string
+  image_filename?: string
+}
+
+interface MainAccord {
+  id: string
+  name: string
+}
+
+export interface Perfume {
+  // Fields in the same order as backend model
+  id: number
+  name: string
+  brand_id: number
+  concentration: string
+  local_image_path?: string
+  gender?: string
+  year?: string // ???
+  category: string,
+
+  type_id: number
+  family_id: number
+
+  release_year?: number
+  country_id: number
+  description?: string
+  longevity?: string
+  sillage?: string
+  occasion?: string[]
+  season?: string[]
+  perfumer_id: number
+  inspiration?: string
+  istrend?: any
+  assets?: string[]
+
+  // Relationships (same order as backend)
+  brand?: Brand
+  type?: Type
+  family?: Family
+  country?: Country
+  perfumer?: Perfumer
+  top_notes?: Note[]
+  middle_notes?: Note[]
+  base_notes?: Note[]
+  main_accords?: MainAccord[]
+  perfume_notes?: PerfumeNote[]
 }
 
 export const useCommon = () => {
@@ -34,31 +112,4 @@ export const useCommon = () => {
   }
 }
 
-export const usePerfumes = () => {
-  const perfumes: Ref<Perfume[]> = ref([])
-  const { isLoading, error, setLoading, setError } = useCommon()
 
-  const fetchPerfumes = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      // TODO: Replace with actual API call
-      perfumes.value = [
-        { id: 1, name: 'Sample Perfume 1', description: 'A delightful fragrance' },
-        { id: 2, name: 'Sample Perfume 2', description: 'An enchanting scent' },
-        { id: 3, name: 'Sample Perfume 3', description: 'A mysterious aroma' },
-      ]
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to fetch perfumes')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return {
-    perfumes,
-    isLoading,
-    error,
-    fetchPerfumes
-  }
-} 
