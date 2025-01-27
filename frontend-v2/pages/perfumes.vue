@@ -38,10 +38,21 @@ const fetchPerfumes = async (page: number) => {
     const result = await getPerfumes(page, itemsPerPage)
     perfumes.value = result.data
     totalItems.value = result.count
+    await loadImages()
   } catch (error) {
     console.error('Error fetching perfumes:', error)
   } finally {
     loading.value = false
+  }
+}
+
+const loadImages = async () => {
+  if (perfumes.value) {
+    for (const perfume of perfumes.value) {
+      if (perfume.local_image_path && !imageUrls.value[perfume.local_image_path]) {
+        imageUrls.value[perfume.local_image_path] = await useBucketImages('perfume_images', perfume.local_image_path)
+      }
+    }
   }
 }
 
@@ -53,18 +64,8 @@ watch(currentPage, async (newPage) => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
-watch(perfumes, async (newPerfumes) => {
-  if (newPerfumes) {
-    for (const perfume of newPerfumes) {
-      if (!imageUrls.value[perfume.local_image_path]) {
-        imageUrls.value[perfume.local_image_path] = await useBucketImages('perfume_images', perfume.local_image_path)
-      }
-    }
-  }
-}, { immediate: true })
-
 onMounted(async () => {
-  await fetchPerfumes(currentPage.value)
+  await loadImages()
 })
 </script>
 
