@@ -22,7 +22,7 @@
     --primary: 199 40% 31%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 46 68% 68%;
     --secondary-foreground: 199 40% 31%;
 
     --accent: 210 40% 96.1%;
@@ -52,11 +52,11 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 199 40% 31%;
+    --primary: 199 40% 31%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 46 68% 68%;
+    --secondary-foreground: 199 40% 31%;
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
@@ -75,4 +75,9 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@font-face {
+  font-family: 'Afterglow-Regular';
+  src: url('~assets/fonts/Afterglow-Regular.otf')  format('opentype'),
 }

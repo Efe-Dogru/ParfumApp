@@ -11,7 +11,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <footer class="relative border-t bg-background text-foreground transition-colors duration-300">
+  <footer class="relative border-t bg-background text-foreground">
     <div class="container mx-auto px-4 py-12 md:px-6 lg:px-8">
       <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
         <div class="relative">
