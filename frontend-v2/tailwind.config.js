@@ -15,6 +15,9 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        afterglow: ['Afterglow-Regular', ]
+       },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -39,6 +42,17 @@ module.exports = {
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          50: "#FDFAF2",
+          100: "#FAF5E5",
+          200: "#F5EAC7",
+          300: "#F0E0AD",
+          400: "#EAD58F",
+          // 500: "#E5CB74",
+          600: "#DAB539",
+          700: "#B08F21",
+          800: "#745E16",
+          900: "#3C310B",
+          950: "#1E1806"
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
