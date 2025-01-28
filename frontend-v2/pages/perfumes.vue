@@ -21,8 +21,15 @@ import {
   PaginationPrev,
 } from '@/components/ui/pagination'
 import { useBucketImages } from '@/composables/useShared'
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { Skeleton } from '@/components/ui/skeleton'
+
+// Define the directive at the top
+const vObserveVisibility = {
+  mounted: (el: HTMLElement, { value }: { value: (el: HTMLElement) => void }) => {
+    value(el)
+  }
+}
 
 const { getPerfumes } = usePerfumes()
 const currentPage = ref(1)
@@ -31,6 +38,54 @@ const totalItems = ref(0)
 const perfumes = ref<Perfume[] | null>(null)
 const imageUrls = ref<Record<string, string>>({})
 const loading = ref(true)
+const observer = ref<IntersectionObserver | null>(null)
+
+const loadImage = async (perfume: Perfume) => {
+  if (perfume.local_image_path && !imageUrls.value[perfume.local_image_path]) {
+    try {
+      imageUrls.value[perfume.local_image_path] = await useBucketImages('perfume_images', perfume.local_image_path)
+    } catch (error) {
+      console.error('Error loading image:', error)
+    }
+  }
+}
+
+const setupIntersectionObserver = () => {
+  if (process.client) {
+    observer.value = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const perfumeId = entry.target.getAttribute('data-perfume-id')
+          const perfume = perfumes.value?.find(p => p.id.toString() === perfumeId)
+          if (perfume) {
+            loadImage(perfume)
+            observer.value?.unobserve(entry.target)
+          }
+        }
+      })
+    }, {
+      root: null,
+      rootMargin: '50px',
+      threshold: 0.1
+    })
+  }
+}
+
+const observeImage = (el: HTMLElement) => {
+  if (observer.value && process.client) {
+    observer.value.observe(el)
+  }
+}
+
+onMounted(() => {
+  setupIntersectionObserver()
+})
+
+onUnmounted(() => {
+  if (observer.value) {
+    observer.value.disconnect()
+  }
+})
 
 const fetchPerfumes = async (page: number) => {
   loading.value = true
@@ -38,7 +93,6 @@ const fetchPerfumes = async (page: number) => {
     const result = await getPerfumes(page, itemsPerPage)
     perfumes.value = result.data
     totalItems.value = result.count
-    await loadImages()
   } catch (error) {
     console.error('Error fetching perfumes:', error)
   } finally {
@@ -46,26 +100,14 @@ const fetchPerfumes = async (page: number) => {
   }
 }
 
-const loadImages = async () => {
-  if (perfumes.value) {
-    for (const perfume of perfumes.value) {
-      if (perfume.local_image_path && !imageUrls.value[perfume.local_image_path]) {
-        imageUrls.value[perfume.local_image_path] = await useBucketImages('perfume_images', perfume.local_image_path)
-      }
-    }
-  }
-}
-
-// Initialize data
-await fetchPerfumes(currentPage.value)
+// Move initialization to onMounted
+onMounted(async () => {
+  await fetchPerfumes(currentPage.value)
+})
 
 watch(currentPage, async (newPage) => {
   await fetchPerfumes(newPage)
   window.scrollTo({ top: 0, behavior: 'smooth' })
-})
-
-onMounted(async () => {
-  await loadImages()
 })
 </script>
 
@@ -88,11 +130,21 @@ onMounted(async () => {
       <template v-else>
         <Card v-for="perfume in perfumes || []" :key="perfume.id" class="overflow-hidden hover:shadow-lg transition-shadow">
           <CardHeader>
-            <img 
-              :src="imageUrls[perfume.local_image_path]" 
-              :alt="perfume.name"
-              class="w-full h-full object-cover rounded-t-lg"
-            />
+            <div 
+              :data-perfume-id="perfume.id"
+              v-observe-visibility="observeImage"
+              class="w-full h-[200px] bg-muted"
+            >
+              <img 
+                v-if="imageUrls[perfume.local_image_path]"
+                :src="imageUrls[perfume.local_image_path]" 
+                :alt="perfume.name"
+                class="w-full h-full object-cover rounded-t-lg"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center">
+                <Skeleton class="w-full h-full" />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <CardTitle class="text-xl">{{ perfume.name }}</CardTitle>
