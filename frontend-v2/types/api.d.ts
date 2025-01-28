@@ -10,3 +10,9 @@ export interface Brand {
     name: string
 }
 
+export interface Concentration{
+    id: number
+    name: string
+}
+
+
