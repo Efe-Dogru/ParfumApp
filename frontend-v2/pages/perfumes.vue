@@ -23,6 +23,7 @@ import {
 import { useBucketImages } from '@/composables/useShared'
 import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { Skeleton } from '@/components/ui/skeleton'
+import { NuxtLink } from '#components'
 import Input from '@/components/ui/input/Input.vue'
 import ComboBox from '@/components/ui/custom/ComboBox.vue'
 
@@ -98,7 +99,7 @@ const setupIntersectionObserver = () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const perfumeId = entry.target.getAttribute('data-perfume-id')
-          const perfume = perfumes.value?.find(p => p.id.toString() === perfumeId)
+          const perfume = perfumes.value?.find(p => p.id.toString() perfumeId)
           if (perfume) {
             loadImage(perfume)
             observer.value?.unobserve(entry.target)
@@ -333,4 +334,3 @@ watch([selectedGender, selectedBrand, selectedCategory, selectedSeason], async (
     </div>
   </div>
 </template>
-  

@@ -101,6 +101,20 @@ export const usePerfumes = () => {
         }
     }
 
+
+    const getPerfume = async (id: number) => {
+        const { data, error } = await client
+            .from('perfumes')
+            .select(`
+                *,
+                brands:brand_id(*)
+            `)
+            .eq('id', id)
+            .single()
+
+        if (error) throw error
+        return data as Perfume
+
     const getTrendingPerfumes = async (limit: number = 8) => {
         const { data, error } = await client
             .from('perfume_tags')
@@ -136,12 +150,12 @@ export const usePerfumes = () => {
 
     return {
         getPerfumes,
+        getPerfume,
         getTrendingPerfumes,
         getTopRatedPerfumes,
         getMostLovedPerfumes,
         searchPerfume,
         getBrands,
         getConcentrations
-
     }
 }
