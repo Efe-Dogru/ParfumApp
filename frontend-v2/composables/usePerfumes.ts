@@ -138,7 +138,7 @@ export const usePerfumes = () => {
         getPerfumes,
         getTrendingPerfumes,
         getTopRatedPerfumes,
-        getMostLovedPerfumes
+        getMostLovedPerfumes,
         searchPerfume,
         getBrands,
         getConcentrations
