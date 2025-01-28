@@ -5,7 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 interface PerfumeTagJoin {
     perfumes: Perfume
 
-
+}
 interface FilterParams {
     gender?: string;
     brand_id?: string;
