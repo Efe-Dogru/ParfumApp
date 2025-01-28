@@ -114,6 +114,7 @@ export const usePerfumes = () => {
 
         if (error) throw error
         return data as Perfume
+    }
 
     const getTrendingPerfumes = async (limit: number = 8) => {
         const { data, error } = await client

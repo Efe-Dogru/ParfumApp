@@ -5,6 +5,7 @@ import HeroSection from '@/components/ui/custom/HeroSection.vue'
 import type { Perfume } from '~/types/api'
 import { useBucketImages } from '@/composables/useShared'
 import { ref, onMounted } from 'vue'
+import { NuxtLink } from '#components'
 
 const { getTrendingPerfumes, getTopRatedPerfumes, getMostLovedPerfumes } = usePerfumes()
 
@@ -38,17 +39,22 @@ onMounted(async () => {
                 <h2 class="text-2xl font-bold mb-6">Trending Now</h2>
                 <div class="relative">
                     <div class="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory hide-scrollbar">
-                        <div v-for="perfume in trendingPerfumes" :key="perfume.id" class="flex-none w-[200px] snap-start">
+                        <NuxtLink 
+                            v-for="perfume in trendingPerfumes" 
+                            :key="perfume.id" 
+                            :to="`/perfume/${perfume.id}`"
+                            class="flex-none w-[200px] snap-start group hover:opacity-95 transition-opacity"
+                        >
                             <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
                                 <img 
                                     :src="imageUrls[perfume.local_image_path]"
                                     :alt="perfume.name"
-                                    class="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+                                    class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                                 />
                             </div>
-                            <h3 class="font-medium">{{ perfume.brands?.name }}</h3>
-                            <p class="text-sm text-gray-600">{{ perfume.name }}</p>
-                        </div>
+                            <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
+                            <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
+                        </NuxtLink>
                     </div>
                 </div>
             </section>
@@ -58,17 +64,22 @@ onMounted(async () => {
                 <h2 class="text-2xl font-bold mb-6">Top Rated</h2>
                 <div class="relative">
                     <div class="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory hide-scrollbar">
-                        <div v-for="perfume in topRatedPerfumes" :key="perfume.id" class="flex-none w-[200px] snap-start">
+                        <NuxtLink 
+                            v-for="perfume in topRatedPerfumes" 
+                            :key="perfume.id" 
+                            :to="`/perfume/${perfume.id}`"
+                            class="flex-none w-[200px] snap-start group hover:opacity-95 transition-opacity"
+                        >
                             <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
                                 <img 
                                     :src="imageUrls[perfume.local_image_path]"
                                     :alt="perfume.name"
-                                    class="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+                                    class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                                 />
                             </div>
-                            <h3 class="font-medium">{{ perfume.brands?.name }}</h3>
-                            <p class="text-sm text-gray-600">{{ perfume.name }}</p>
-                        </div>
+                            <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
+                            <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
+                        </NuxtLink>
                     </div>
                 </div>
             </section>
@@ -78,17 +89,22 @@ onMounted(async () => {
                 <h2 class="text-2xl font-bold mb-6">Most Loved</h2>
                 <div class="relative">
                     <div class="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory hide-scrollbar">
-                        <div v-for="perfume in mostLovedPerfumes" :key="perfume.id" class="flex-none w-[200px] snap-start">
+                        <NuxtLink 
+                            v-for="perfume in mostLovedPerfumes" 
+                            :key="perfume.id" 
+                            :to="`/perfume/${perfume.id}`"
+                            class="flex-none w-[200px] snap-start group hover:opacity-95 transition-opacity"
+                        >
                             <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
                                 <img 
                                     :src="imageUrls[perfume.local_image_path]"
                                     :alt="perfume.name"
-                                    class="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+                                    class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                                 />
                             </div>
-                            <h3 class="font-medium">{{ perfume.brands?.name }}</h3>
-                            <p class="text-sm text-gray-600">{{ perfume.name }}</p>
-                        </div>
+                            <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
+                            <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
+                        </NuxtLink>
                     </div>
                 </div>
             </section>

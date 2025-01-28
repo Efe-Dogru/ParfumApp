@@ -24,7 +24,21 @@ const { isDark, toggleDarkMode } = useTheme()
 // Compute active tab based on current route
 const activeTab = computed(() => {
   const currentPath = route.path
-  const activeItem = props.items.find(item => item.url === currentPath)
+  
+  // Handle perfume detail pages
+  if (currentPath.startsWith('/perfume/')) {
+    return 'Perfumes'
+  }
+
+  const activeItem = props.items.find(item => {
+    // Exact match for home page
+    if (item.url === '/') {
+      return currentPath === '/'
+    }
+    // For other pages, check if the current path starts with the item's URL
+    return currentPath.startsWith(item.url)
+  })
+
   return activeItem ? activeItem.name : props.items[0].name
 })
 

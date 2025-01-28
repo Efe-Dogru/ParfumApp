@@ -99,7 +99,7 @@ const setupIntersectionObserver = () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const perfumeId = entry.target.getAttribute('data-perfume-id')
-          const perfume = perfumes.value?.find(p => p.id.toString() perfumeId)
+          const perfume = perfumes.value?.find(p => p.id.toString() === perfumeId)
           if (perfume) {
             loadImage(perfume)
             observer.value?.unobserve(entry.target)
@@ -281,7 +281,12 @@ watch([selectedGender, selectedBrand, selectedCategory, selectedSeason], async (
           </div>
         </template>
         <template v-else>
-          <div v-for="perfume in perfumes || []" :key="perfume.id" class="flex-none">
+          <NuxtLink 
+            v-for="perfume in perfumes || []" 
+            :key="perfume.id" 
+            :to="`/perfume/${perfume.id}`"
+            class="flex-none group hover:opacity-95 transition-opacity"
+          >
             <div 
               :data-perfume-id="perfume.id"
               v-observe-visibility="observeImage"
@@ -291,15 +296,15 @@ watch([selectedGender, selectedBrand, selectedCategory, selectedSeason], async (
                 v-if="imageUrls[perfume.local_image_path]"
                 :src="imageUrls[perfume.local_image_path]" 
                 :alt="perfume.name"
-                class="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+                class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
               />
               <div v-else class="w-full h-full flex items-center justify-center">
                 <Skeleton class="w-full h-full" />
               </div>
             </div>
-            <h3 class="font-medium">{{ perfume.brands.name }}</h3>
-            <p class="text-sm text-gray-600">{{ perfume.name }}</p>
-          </div>
+            <h3 class="font-medium text-foreground">{{ perfume.brands.name }}</h3>
+            <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
+          </NuxtLink>
         </template>
       </div>
 
