@@ -27,7 +27,7 @@ onMounted(() => {
             />
             <button
               type="submit"
-              class="absolute right-1 top-1 h-8 w-8 rounded-full bg-[#4A154B] text-white transition-transform hover:scale-105 inline-flex items-center justify-center"
+              class="absolute right-1 top-1 h-8 w-8 rounded-full bg-primary-700 text-white transition-transform hover:scale-105 inline-flex items-center justify-center"
             >
               <Send class="h-4 w-4" />
               <span class="sr-only">Subscribe</span>
@@ -86,7 +86,7 @@ onMounted(() => {
             <button 
               @click="toggleDarkMode"
               class="inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-              :class="isDark ? 'bg-[#4A154B]' : 'bg-input'"
+              :class="isDark ? 'bg-primary-700' : 'bg-input'"
             >
               <span
                 class="pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform"

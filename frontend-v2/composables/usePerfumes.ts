@@ -1,10 +1,17 @@
+
 import type { Brand, Concentration, Perfume } from '~/types/api'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+interface PerfumeTagJoin {
+    perfumes: Perfume
+
 
 interface FilterParams {
     gender?: string;
     brand_id?: string;
     concentration_id?: string;
     season?: string;
+
 }
 
 export const usePerfumes = () => {
@@ -94,10 +101,47 @@ export const usePerfumes = () => {
         }
     }
 
+    const getTrendingPerfumes = async (limit: number = 8) => {
+        const { data, error } = await client
+            .from('perfume_tags')
+            .select('perfumes:perfume_id(id, name, local_image_path, brands:brand_id(name))')
+            .eq('tag_id', 1)
+            .limit(limit)
+
+        if (error) throw error
+        return (data?.map(item => (item as PerfumeTagJoin).perfumes) || []) as Perfume[]
+    }
+
+    const getTopRatedPerfumes = async (limit: number = 8) => {
+        const { data, error } = await client
+            .from('perfume_tags')
+            .select('perfumes:perfume_id(id, name, local_image_path, brands:brand_id(name))')
+            .eq('tag_id', 2)
+            .limit(limit)
+
+        if (error) throw error
+        return (data?.map(item => (item as PerfumeTagJoin).perfumes) || []) as Perfume[]
+    }
+
+    const getMostLovedPerfumes = async (limit: number = 8) => {
+        const { data, error } = await client
+            .from('perfume_tags')
+            .select('perfumes:perfume_id(id, name, local_image_path, brands:brand_id(name))')
+            .eq('tag_id', 3)
+            .limit(limit)
+
+        if (error) throw error
+        return (data?.map(item => (item as PerfumeTagJoin).perfumes) || []) as Perfume[]
+    }
+
     return {
         getPerfumes,
+        getTrendingPerfumes,
+        getTopRatedPerfumes,
+        getMostLovedPerfumes
         searchPerfume,
         getBrands,
         getConcentrations
+
     }
 }
