@@ -24,7 +24,22 @@ export const usePerfumes = () => {
         }
     }
 
+    const getPerfume = async (id: number) => {
+        const { data, error } = await client
+            .from('perfumes')
+            .select(`
+                *,
+                brands:brand_id(*)
+            `)
+            .eq('id', id)
+            .single()
+
+        if (error) throw error
+        return data as Perfume
+    }
+
     return {
-        getPerfumes
+        getPerfumes,
+        getPerfume
     }
 }

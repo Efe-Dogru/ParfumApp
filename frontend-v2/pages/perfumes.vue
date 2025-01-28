@@ -23,6 +23,7 @@ import {
 import { useBucketImages } from '@/composables/useShared'
 import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { Skeleton } from '@/components/ui/skeleton'
+import { NuxtLink } from '#components'
 
 // Define the directive at the top
 const vObserveVisibility = {
@@ -128,31 +129,38 @@ watch(currentPage, async (newPage) => {
         </Card>
       </template>
       <template v-else>
-        <Card v-for="perfume in perfumes || []" :key="perfume.id" class="overflow-hidden hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div 
-              :data-perfume-id="perfume.id"
-              v-observe-visibility="observeImage"
-              class="w-full h-[200px] bg-muted"
-            >
-              <img 
-                v-if="imageUrls[perfume.local_image_path]"
-                :src="imageUrls[perfume.local_image_path]" 
-                :alt="perfume.name"
-                class="w-full h-full object-cover rounded-t-lg"
-              />
-              <div v-else class="w-full h-full flex items-center justify-center">
-                <Skeleton class="w-full h-full" />
+        <NuxtLink 
+          v-for="perfume in perfumes || []" 
+          :key="perfume.id" 
+          :to="`/perfume/${perfume.id}`"
+          class="block h-full"
+        >
+          <Card class="overflow-hidden hover:shadow-lg transition-shadow h-full">
+            <CardHeader>
+              <div 
+                :data-perfume-id="perfume.id"
+                v-observe-visibility="observeImage"
+                class="w-full h-[200px] bg-muted"
+              >
+                <img 
+                  v-if="imageUrls[perfume.local_image_path]"
+                  :src="imageUrls[perfume.local_image_path]" 
+                  :alt="perfume.name"
+                  class="w-full h-full object-cover rounded-t-lg"
+                />
+                <div v-else class="w-full h-full flex items-center justify-center">
+                  <Skeleton class="w-full h-full" />
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <CardTitle class="text-xl">{{ perfume.name }}</CardTitle>
-          </CardContent>
-          <CardFooter>
-            <CardTitle class="text-xl mb-2">{{ perfume.brands.name }}</CardTitle>
-          </CardFooter>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <CardTitle class="text-xl">{{ perfume.name }}</CardTitle>
+            </CardContent>
+            <CardFooter>
+              <CardTitle class="text-xl mb-2">{{ perfume.brands.name }}</CardTitle>
+            </CardFooter>
+          </Card>
+        </NuxtLink>
       </template>
     </div>
 
@@ -186,4 +194,3 @@ watch(currentPage, async (newPage) => {
     </div>
   </div>
 </template>
-  
