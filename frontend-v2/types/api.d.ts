@@ -43,3 +43,8 @@ export interface PerfumeNote {
     note_type: 'top' | 'middle' | 'base'
     note: Note
 }
+
+export interface Concentration{
+    id: number
+    name: string
+}
