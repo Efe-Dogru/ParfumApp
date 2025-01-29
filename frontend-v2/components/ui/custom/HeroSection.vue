@@ -43,69 +43,35 @@
         </p> -->
 
         <!-- Advanced Search Bar -->
-        <div class="relative max-w-3xl mx-auto p-[2px] rounded-lg bg-gradient-to-r from-secondary via-secondary-300 to-secondary mb-8">
-          <div class="bg-primary-700 flex items-center max-w-4xl mx-auto rounded-lg divide-x divide-gray-600">
+        <div class="relative max-w-3xl mx-auto p-[2px] rounded-lg mb-8">
+          <div class="bg-primary-700 flex items-center border-2 border-secondary/30 max-w-4xl mx-auto rounded-lg divide-x divide-gray-600">
             <!-- Search Input -->
             <div class="flex-1 min-w-[200px] px-2 py-2">
               <Command class="rounded-lg border-0 shadow-none bg-primary-700">
-                  <CommandInput class="h-10 text-white placeholder:text-gray-400" placeholder="Search perfumes..." />
+                  <CommandInput class="h-10 text-white placeholder:text-gray-400 border-0" placeholder="Search perfumes..." />
               </Command>
             </div>
 
-            <!-- Location Combobox -->
+            <!-- Brands MultiComboBox -->
             <div class="flex-1 min-w-[200px] px-2 py-2">
-              <Popover>
-                <PopoverTrigger as-child>
-                  <Button variant="ghost" role="combobox" class="w-full h-10 justify-between bg-primary-700 text-white hover:bg-primary-600 hover:text-white">
-                      {{ selectedLocation || "Select location..." }}
-                      <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent class="w-full p-0">
-                  <Command class="bg-primary-700">
-                    <CommandInput class="text-white placeholder:text-gray-400" placeholder="Search location..." />
-                    <CommandGroup class="text-white">
-                      <CommandItem
-                        v-for="location in locations"
-                        :key="location"
-                        :value="location"
-                        @select="selectedLocation = location"
-                        class="hover:bg-primary-600"
-                      >
-                        {{ location }}
-                      </CommandItem>
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <MultiComboBox
+                v-model="selectedBrands"
+                :items="brands"
+                placeholder="Select brands..."
+                searchPlaceholder="Search brands..."
+                class="bg-primary-700 text-white"
+              />
             </div>
 
-            <!-- Date Combobox -->
+            <!-- Notes MultiComboBox -->
             <div class="flex-1 min-w-[200px] px-2 py-2">
-              <Popover>
-                <PopoverTrigger as-child>
-                  <Button variant="ghost" role="combobox" class="w-full h-10 justify-between bg-primary-700 text-white hover:bg-primary-600 hover:text-white">
-                      {{ selectedDate || "Select date..." }}
-                      <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent class="w-full p-0">
-                  <Command class="bg-primary-700">
-                    <CommandInput class="text-white placeholder:text-gray-400" placeholder="Search date..." />
-                    <CommandGroup class="text-white">
-                      <CommandItem
-                        v-for="date in dates"
-                        :key="date"
-                        :value="date"
-                        @select="selectedDate = date"
-                        class="hover:bg-primary-600"
-                      >
-                        {{ date }}
-                      </CommandItem>
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <MultiComboBox
+                v-model="selectedNotes"
+                :items="notes"
+                placeholder="Select notes..."
+                searchPlaceholder="Search notes..."
+                class="bg-primary-700 text-white"
+              />
             </div>
 
             <!-- Search Button -->
@@ -135,27 +101,28 @@
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ChevronDown } from 'lucide-vue-next'
+import MultiComboBox from '@/components/ui/custom/MultiComboBox.vue'
 
-const selectedLocation = ref('')
-const selectedDate = ref('')
-
+const selectedBrands = ref<string[]>([])
+const selectedNotes = ref<string[]>([])
+  
 // Example data - replace with your actual data
-const locations = [
-  'New York',
-  'London',
-  'Paris',
-  'Tokyo',
-  'Sydney'
+const brands = [
+  { value: 'chanel', label: 'Chanel' },
+  { value: 'dior', label: 'Dior' },
+  { value: 'gucci', label: 'Gucci' },
+  { value: 'tom-ford', label: 'Tom Ford' },
+  { value: 'ysl', label: 'YSL' },
+  { value: 'hermes', label: 'Hermès' },
 ]
 
-const dates = [
-  'Today',
-  'Tomorrow',
-  'This Week',
-  'This Month',
-  'Custom Date'
+const notes = [
+  { value: 'floral', label: 'Floral' },
+  { value: 'woody', label: 'Woody' },
+  { value: 'citrus', label: 'Citrus' },
+  { value: 'oriental', label: 'Oriental' },
+  { value: 'fresh', label: 'Fresh' },
+  { value: 'spicy', label: 'Spicy' },
 ]
 </script>
 
@@ -200,4 +167,9 @@ const dates = [
   0%, 100% { transform: translateY(-20px) scaleY(1); }
   50% { transform: translateY(20px) scaleY(1.1); }
 }
+
+:deep([cmdk-input-wrapper]) {
+  border: none !important;
+}
+
 </style>

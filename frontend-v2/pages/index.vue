@@ -6,6 +6,8 @@ import type { Perfume } from '~/types/api'
 import { useBucketImages } from '@/composables/useShared'
 import { ref, onMounted } from 'vue'
 import { NuxtLink } from '#components'
+import { Skeleton } from '@/components/ui/skeleton'
+import Carousel from '@/components/ui/custom/Carousel.vue'
 
 const { getTrendingPerfumes, getTopRatedPerfumes, getMostLovedPerfumes } = usePerfumes()
 
@@ -14,9 +16,66 @@ const topRatedPerfumes = ref<Perfume[]>([])
 const mostLovedPerfumes = ref<Perfume[]>([])
 const imageUrls = ref<Record<string, string>>({})
 
-const loadImages = async () => {
-    const allPerfumes = [...trendingPerfumes.value, ...topRatedPerfumes.value, ...mostLovedPerfumes.value]
-    for (const perfume of allPerfumes) {
+const loading = ref({
+    trending: false,
+    topRated: false,
+    mostLoved: false
+})
+
+const currentPage = ref({
+    trending: 1,
+    topRated: 1,
+    mostLoved: 1
+})
+
+const hasMore = ref({
+    trending: true,
+    topRated: true,
+    mostLoved: true
+})
+
+const loadMore = async (section: 'trending' | 'topRated' | 'mostLoved') => {
+    if (loading.value[section] || !hasMore.value[section]) return
+
+    loading.value[section] = true
+    try {
+        let newPerfumes: Perfume[] = []
+        switch (section) {
+            case 'trending':
+                newPerfumes = await getTrendingPerfumes(currentPage.value[section])
+                break
+            case 'topRated':
+                newPerfumes = await getTopRatedPerfumes(currentPage.value[section])
+                break
+            case 'mostLoved':
+                newPerfumes = await getMostLovedPerfumes(currentPage.value[section])
+                break
+        }
+
+        if (newPerfumes.length === 0) {
+            hasMore.value[section] = false
+        } else {
+            switch (section) {
+                case 'trending':
+                    trendingPerfumes.value.push(...newPerfumes)
+                    break
+                case 'topRated':
+                    topRatedPerfumes.value.push(...newPerfumes)
+                    break
+                case 'mostLoved':
+                    mostLovedPerfumes.value.push(...newPerfumes)
+                    break
+            }
+            currentPage.value[section]++
+            await loadImages(newPerfumes)
+        }
+    } finally {
+        loading.value[section] = false
+    }
+}
+
+const loadImages = async (perfumes: Perfume[]) => {
+    for (const perfume of perfumes) {
         if (perfume.local_image_path && !imageUrls.value[perfume.local_image_path]) {
             imageUrls.value[perfume.local_image_path] = await useBucketImages('perfume_images', perfume.local_image_path)
         }
@@ -24,99 +83,156 @@ const loadImages = async () => {
 }
 
 onMounted(async () => {
-    trendingPerfumes.value = await getTrendingPerfumes()
-    topRatedPerfumes.value = await getTopRatedPerfumes()
-    mostLovedPerfumes.value = await getMostLovedPerfumes()
-    await loadImages()
+    await Promise.all([
+        loadMore('trending'),
+        loadMore('topRated'),
+        loadMore('mostLoved')
+    ])
 })
 </script>
 
 <template>
-        <HeroSection />
-        <div class="container mx-auto px-4 py-8 space-y-12">
-            <!-- Trending Now Section -->
-            <section>
-                <h2 class="text-2xl font-bold mb-6">Trending Now</h2>
-                <div class="relative">
-                    <div class="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory hide-scrollbar">
-                        <NuxtLink 
-                            v-for="perfume in trendingPerfumes" 
-                            :key="perfume.id" 
-                            :to="`/perfume/${perfume.id}`"
-                            class="flex-none w-[200px] snap-start group hover:opacity-95 transition-opacity"
-                        >
-                            <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
-                                <img 
-                                    :src="imageUrls[perfume.local_image_path]"
-                                    :alt="perfume.name"
-                                    class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-                                />
-                            </div>
-                            <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
-                            <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
-                        </NuxtLink>
+    <HeroSection />
+    <div class="container mx-auto px-4 py-8 space-y-12">
+        <!-- Trending Now Section -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold font-afterglow">Trending Now</h2>
+                <div class="w-36 h-[2px] mt-2 bg-gradient-to-r from-transparent via-secondary to-secondary"></div>
+            </div>
+            <div class="relative">
+                <template v-if="!loading.trending || trendingPerfumes.length > 0">
+                    <Carousel
+                        :items="trendingPerfumes"
+                        :loading="loading.trending"
+                        :has-more="hasMore.trending"
+                        :on-load-more="() => loadMore('trending')"
+                    >
+                        <template #default="{ items }">
+                            <NuxtLink 
+                                v-for="perfume in items" 
+                                :key="perfume.id" 
+                                :to="`/perfume/${perfume.id}`"
+                                class="flex-none w-[200px] group hover:opacity-95 transition-opacity"
+                            >
+                                <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
+                                    <img 
+                                        :src="imageUrls[perfume.local_image_path]"
+                                        :alt="perfume.name"
+                                        class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                </div>
+                                <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
+                                <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
+                            </NuxtLink>
+                        </template>
+                    </Carousel>
+                </template>
+                <template v-if="loading.trending && trendingPerfumes.length === 0">
+                    <div class="flex gap-6">
+                        <div v-for="n in 5" :key="n" class="flex-none w-[200px]">
+                            <Skeleton class="aspect-square mb-3 rounded-lg" />
+                            <Skeleton class="h-4 w-3/4 mb-2" />
+                            <Skeleton class="h-4 w-1/2" />
+                        </div>
                     </div>
-                </div>
-            </section>
+                </template>
+            </div>
+        </section>
 
-            <!-- Top Rated Section -->
-            <section>
-                <h2 class="text-2xl font-bold mb-6">Top Rated</h2>
-                <div class="relative">
-                    <div class="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory hide-scrollbar">
-                        <NuxtLink 
-                            v-for="perfume in topRatedPerfumes" 
-                            :key="perfume.id" 
-                            :to="`/perfume/${perfume.id}`"
-                            class="flex-none w-[200px] snap-start group hover:opacity-95 transition-opacity"
-                        >
-                            <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
-                                <img 
-                                    :src="imageUrls[perfume.local_image_path]"
-                                    :alt="perfume.name"
-                                    class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-                                />
-                            </div>
-                            <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
-                            <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
-                        </NuxtLink>
+        <!-- Top Rated Section -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold font-afterglow">Top Rated</h2>
+                <div class="w-36 h-[2px] mt-2 bg-gradient-to-r from-transparent via-secondary to-secondary"></div>
+            </div>
+            <div class="relative">
+                <template v-if="!loading.topRated || topRatedPerfumes.length > 0">
+                    <Carousel
+                        :items="topRatedPerfumes"
+                        :loading="loading.topRated"
+                        :has-more="hasMore.topRated"
+                        :on-load-more="() => loadMore('topRated')"
+                    >
+                        <template #default="{ items }">
+                            <NuxtLink 
+                                v-for="perfume in items" 
+                                :key="perfume.id" 
+                                :to="`/perfume/${perfume.id}`"
+                                class="flex-none w-[200px] group hover:opacity-95 transition-opacity"
+                            >
+                                <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
+                                    <img 
+                                        :src="imageUrls[perfume.local_image_path]"
+                                        :alt="perfume.name"
+                                        class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                </div>
+                                <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
+                                <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
+                            </NuxtLink>
+                        </template>
+                    </Carousel>
+                </template>
+                <template v-if="loading.topRated && topRatedPerfumes.length === 0">
+                    <div class="flex gap-6">
+                        <div v-for="n in 5" :key="n" class="flex-none w-[200px]">
+                            <Skeleton class="aspect-square mb-3 rounded-lg" />
+                            <Skeleton class="h-4 w-3/4 mb-2" />
+                            <Skeleton class="h-4 w-1/2" />
+                        </div>
                     </div>
-                </div>
-            </section>
+                </template>
+            </div>
+        </section>
 
-            <!-- Most Loved Section -->
-            <section>
-                <h2 class="text-2xl font-bold mb-6">Most Loved</h2>
-                <div class="relative">
-                    <div class="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory hide-scrollbar">
-                        <NuxtLink 
-                            v-for="perfume in mostLovedPerfumes" 
-                            :key="perfume.id" 
-                            :to="`/perfume/${perfume.id}`"
-                            class="flex-none w-[200px] snap-start group hover:opacity-95 transition-opacity"
-                        >
-                            <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
-                                <img 
-                                    :src="imageUrls[perfume.local_image_path]"
-                                    :alt="perfume.name"
-                                    class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-                                />
-                            </div>
-                            <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
-                            <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
-                        </NuxtLink>
+        <!-- Most Loved Section -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold font-afterglow">Most Loved</h2>
+                <div class="w-36 h-[2px] mt-2 bg-gradient-to-r from-transparent via-secondary to-secondary"></div>
+            </div>
+            <div class="relative">
+                <template v-if="!loading.mostLoved || mostLovedPerfumes.length > 0">
+                    <Carousel
+                        :items="mostLovedPerfumes"
+                        :loading="loading.mostLoved"
+                        :has-more="hasMore.mostLoved"
+                        :on-load-more="() => loadMore('mostLoved')"
+                    >
+                        <template #default="{ items }">
+                            <NuxtLink 
+                                v-for="perfume in items" 
+                                :key="perfume.id" 
+                                :to="`/perfume/${perfume.id}`"
+                                class="flex-none w-[200px] group hover:opacity-95 transition-opacity"
+                            >
+                                <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
+                                    <img 
+                                        :src="imageUrls[perfume.local_image_path]"
+                                        :alt="perfume.name"
+                                        class="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                </div>
+                                <h3 class="font-medium text-foreground">{{ perfume.brands?.name }}</h3>
+                                <p class="text-sm text-muted-foreground">{{ perfume.name }}</p>
+                            </NuxtLink>
+                        </template>
+                    </Carousel>
+                </template>
+                <template v-if="loading.mostLoved && mostLovedPerfumes.length === 0">
+                    <div class="flex gap-6">
+                        <div v-for="n in 5" :key="n" class="flex-none w-[200px]">
+                            <Skeleton class="aspect-square mb-3 rounded-lg" />
+                            <Skeleton class="h-4 w-3/4 mb-2" />
+                            <Skeleton class="h-4 w-1/2" />
+                        </div>
                     </div>
-                </div>
-            </section>
+                </template>
+            </div>
+        </section>
     </div>
 </template>
 
 <style scoped>
-.hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-.hide-scrollbar::-webkit-scrollbar {
-    display: none;
-}
 </style>

@@ -1,4 +1,3 @@
-
 import type { Brand, Concentration, Perfume } from '~/types/api'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -116,34 +115,43 @@ export const usePerfumes = () => {
         return data as Perfume
     }
 
-    const getTrendingPerfumes = async (limit: number = 8) => {
+    const getTrendingPerfumes = async (page: number = 1, limit: number = 20) => {
+        const start = (page - 1) * limit
+        const end = start + limit - 1
+        
         const { data, error } = await client
             .from('perfume_tags')
             .select('perfumes:perfume_id(id, name, local_image_path, brands:brand_id(name))')
             .eq('tag_id', 1)
-            .limit(limit)
+            .range(start, end)
 
         if (error) throw error
         return (data?.map(item => (item as PerfumeTagJoin).perfumes) || []) as Perfume[]
     }
 
-    const getTopRatedPerfumes = async (limit: number = 8) => {
+    const getTopRatedPerfumes = async (page: number = 1, limit: number = 20) => {
+        const start = (page - 1) * limit
+        const end = start + limit - 1
+
         const { data, error } = await client
             .from('perfume_tags')
             .select('perfumes:perfume_id(id, name, local_image_path, brands:brand_id(name))')
             .eq('tag_id', 2)
-            .limit(limit)
+            .range(start, end)
 
         if (error) throw error
         return (data?.map(item => (item as PerfumeTagJoin).perfumes) || []) as Perfume[]
     }
 
-    const getMostLovedPerfumes = async (limit: number = 8) => {
+    const getMostLovedPerfumes = async (page: number = 1, limit: number = 20) => {
+        const start = (page - 1) * limit
+        const end = start + limit - 1
+
         const { data, error } = await client
             .from('perfume_tags')
             .select('perfumes:perfume_id(id, name, local_image_path, brands:brand_id(name))')
             .eq('tag_id', 3)
-            .limit(limit)
+            .range(start, end)
 
         if (error) throw error
         return (data?.map(item => (item as PerfumeTagJoin).perfumes) || []) as Perfume[]
