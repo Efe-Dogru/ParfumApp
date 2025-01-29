@@ -47,9 +47,9 @@ const getFilterLabel = (key: keyof Filters, value: string) => {
     q: 'Search',
     family: 'Family',
     mood: 'Mood'
-  }
+        }
   return `${labels[key]}: ${value}`
-}
+  }
 
 // Function to remove a filter
 const removeFilter = (key: keyof Filters) => {
@@ -103,7 +103,7 @@ const fetchNotes = async (page: number) => {
 const visiblePages = computed(() => {
   const pages = new Set([1]) // Always include page 1
   const current = currentPage.value
-  
+
   // Add current page and adjacent pages
   if (current > 1) pages.add(current - 1)
   pages.add(current)
@@ -131,7 +131,7 @@ let searchTimeout: NodeJS.Timeout
 const handleSearch = async (event: Event) => {
   const target = event.target as HTMLInputElement
   filters.q = target.value
-  
+
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(async () => {
     currentPage.value = 1
@@ -186,12 +186,12 @@ onUnmounted(() => {
             <input
               v-model="filters.q"
               type="text"
-              placeholder="Search notes..."
-              @input="handleSearch"
+        placeholder="Search notes..."
+        @input="handleSearch"
               class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-background border border-input hover:border-[#4A154B] dark:hover:border-white transition-all focus:outline-none focus:ring-2 focus:ring-[#4A154B] dark:focus:ring-white"
-            />
-          </div>
-
+      />
+    </div>
+    
           <!-- Family Filter -->
           <div class="relative select-wrapper">
             <select
@@ -247,33 +247,33 @@ onUnmounted(() => {
               Clear All
             </button>
           </div>
-        </div>
-      </div>
+          </div>
+          </div>
 
       <div v-if="loading" class="flex justify-center items-center py-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+        </div>
       <div v-else>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          <NuxtLink 
+        <NuxtLink 
             v-for="note in Notes" 
-            :key="note.id" 
-            :to="`/note/${note.id}`" 
+          :key="note.id" 
+          :to="`/note/${note.id}`"
             class="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-card"
-          >
+        >
             <div class="aspect-square w-full">
-              <img 
-                :src="`http://127.0.0.1:8000/static/notes_images/${note.image_filename}`"
-                :alt="note.name"
+            <img 
+              :src="`http://127.0.0.1:8000/static/notes_images/${note.image_filename}`"
+              :alt="note.name"
                 class="w-full h-full object-cover"
-              />
-            </div>
+            />
+          </div>
             <div class="p-2">
               <h2 class="text-sm font-medium group-hover:text-primary truncate font-mono">{{ note.name }}</h2>
               <p v-if="note.family" class="text-xs text-muted-foreground truncate">{{ note.family }}</p>
             </div>
-          </NuxtLink>
-        </div>
+        </NuxtLink>
+    </div>
 
         <!-- Pagination -->
         <nav role="navigation" aria-label="pagination" class="mx-auto flex w-full justify-center mt-8">
@@ -318,7 +318,7 @@ onUnmounted(() => {
                 :disabled="Notes.length < itemsPerPage || loading"
                 class="inline-flex h-10 items-center justify-center gap-1 pr-2.5 rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground"
                 aria-label="Go to next page"
-              >
+      >
                 <span>Next</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                   <path d="m9 18 6-6-6-6"/>

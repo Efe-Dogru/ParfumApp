@@ -1,15 +1,57 @@
-import type { Note, PerfumeNote } from '~/types/api'
+import type { Note } from '~/types/note'
+import type { PerfumeNote } from '~/types/api'
 
 export const useNotes = () => {
     const client = useSupabaseClient()
     
-    const getNotes = async () => {
-        const { data } = await useAsyncData('notes', async () => {
-            return await client.from('notes').select('id, name').limit(5)
-        }, {
-            transform: result => result.data
-        })
-        
+    const getNotes = async (page: number = 1, itemsPerPage: number = 42, filters: any = {}): Promise<{ data: Note[], count: number }> => {
+        const startRow = (page - 1) * itemsPerPage
+        const endRow = startRow + itemsPerPage - 1
+
+        let query = client
+            .from('notes')
+            .select('id, name, image_filename, family_id', { count: 'exact' })
+            .range(startRow, endRow)
+
+        if (filters.family_id && filters.family_id !== 'all') {
+            query = query.eq('family_id', filters.family_id)
+        }
+
+        const { data, error, count } = await query
+
+        if (error) throw error
+        return { 
+            data: data as Note[], 
+            count: count || 0 
+        }
+    }
+
+    const searchNotes = async (searchQuery: string, filters: any = {}): Promise<{ data: Note[], count: number }> => {
+        let query = client
+            .from('notes')
+            .select('id, name, image_filename, family_id', { count: 'exact' })
+            .ilike('name', `%${searchQuery}%`)
+
+        if (filters.family_id && filters.family_id !== 'all') {
+            query = query.eq('family_id', filters.family_id)
+        }
+
+        const { data, error, count } = await query
+
+        if (error) throw error
+        return { 
+            data: data as Note[], 
+            count: count || 0 
+        }
+    }
+
+    const getNoteFamilies = async () => {
+        const { data, error } = await client
+            .from('note_families')
+            .select('id, name')
+            .order('name')
+
+        if (error) throw error
         return data
     }
 
@@ -17,22 +59,14 @@ export const useNotes = () => {
         const { data: perfumeNotes, error } = await client
             .from('perfume_notes')
             .select(`
-                perfume_id,
-                note_id,
                 note_type,
                 note:notes (
                     id,
                     name,
-                    image_filename,
-                    description,
-                    family_id,
-                    source,
-                    cultural_significance,
-                    normalized_name
+                    image_filename
                 )
             `)
             .eq('perfume_id', perfumeId)
-            .order('note_type')
 
         if (error) {
             console.error('Error fetching perfume notes:', error)
@@ -44,6 +78,8 @@ export const useNotes = () => {
 
     return {
         getNotes,
-        getPerfumeNotes
+        getPerfumeNotes,
+        searchNotes,
+        getNoteFamilies
     }
 } 

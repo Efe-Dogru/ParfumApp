@@ -2,16 +2,25 @@
 import { usePerfumes } from '@/composables/usePerfumes'
 import { useBucketImages } from '@/composables/useShared'
 import { useNotes } from '@/composables/useNotes'
-import type { Perfume, PerfumeNote } from '~/types/api'
+import type { PerfumeDetails, PerfumeNote } from '~/types/perfume'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Home, Search, Droplets, Wind, Clock, Calendar, User2, Flower2, Sparkles, Flame, Heart, Sun, CloudSun, CloudRain, Snowflake, MapPin, GlassWater, Info } from 'lucide-vue-next'
+import { Droplets, Wind, Clock, Calendar, User2, Flower2, Sparkles, Flame, Heart, Sun, CloudSun, CloudRain, Snowflake, MapPin, GlassWater, Info } from 'lucide-vue-next'
+import { 
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator 
+} from '@/components/ui/breadcrumb'
+import { NuxtLink } from '#components'
 
 const route = useRoute()
 const { getPerfume } = usePerfumes()
 const { getPerfumeNotes } = useNotes()
-const perfume = ref<Perfume | null>(null)
+const perfume = ref<PerfumeDetails | null>(null)
 const imageUrl = ref<string>('')
 const loading = ref(true)
 const perfumeNotes = ref<PerfumeNote[]>([])
@@ -25,16 +34,16 @@ const capitalizeWords = (str: string) => {
 }
 
 // Helper function to get accord class
-const getAccordClass = (accordName: string) => {
-  const classes = {
-    // Woody & Earthy tones
-    woody: 'bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100',
-    earthy: 'bg-stone-200 dark:bg-stone-800 text-stone-900 dark:text-stone-100',
-    // ... add more accord classes as needed
-  }
-  const key = accordName.toLowerCase() as keyof typeof classes
-  return classes[key] || 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-}
+// const getAccordClass = (accordName: string) => {
+//   const classes = {
+//     // Woody & Earthy tones
+//     woody: 'bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100',
+//     earthy: 'bg-stone-200 dark:bg-stone-800 text-stone-900 dark:text-stone-100',
+//     // ... add more accord classes as needed
+//   }
+//   const key = accordName.toLowerCase() as keyof typeof classes
+//   return classes[key] || 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+// }
 
 // Helper function to filter notes by type
 const filterNotesByType = (notes: PerfumeNote[], type: 'top' | 'middle' | 'base') => {
@@ -74,39 +83,117 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
-    <div class="container mx-auto px-4 py-12">
-      <div v-if="loading" class="flex justify-center items-center py-8">
-        <div class="space-y-4 w-full">
-          <Skeleton class="h-[400px] w-full" />
-          <Skeleton class="h-12 w-3/4" />
-          <Skeleton class="h-8 w-1/2" />
-          <Skeleton class="h-32 w-full" />
+  <div class="container mx-auto py-12">
+    <div class="">
+      <div v-if="loading" class="space-y-8">
+        <!-- Breadcrumb skeleton -->
+        <div class="flex items-center space-x-2">
+          <Skeleton class="h-4 w-20" />
+          <Skeleton class="h-4 w-4" />
+          <Skeleton class="h-4 w-24" />
+          <Skeleton class="h-4 w-4" />
+          <Skeleton class="h-4 w-32" />
+        </div>
+
+        <!-- Header skeleton -->
+        <div class="space-y-3">
+          <Skeleton class="h-5 w-36" />
+          <Skeleton class="h-10 w-72" />
+          <Skeleton class="h-4 w-48" />
+        </div>
+
+        <!-- Main content skeleton -->
+        <div class="grid gap-16 lg:grid-cols-12">
+          <!-- Image skeleton -->
+          <div class="lg:col-span-5">
+            <div class="aspect-square rounded-lg overflow-hidden">
+              <Skeleton class="w-full h-full" />
+            </div>
+          </div>
+
+          <!-- Content skeleton -->
+          <div class="lg:col-span-7 space-y-12">
+            <!-- Notes skeleton -->
+            <div class="space-y-8">
+              <div v-for="section in 3" :key="section" class="space-y-4">
+                <Skeleton class="h-5 w-32" />
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
+                  <div v-for="note in 5" :key="note" class="flex flex-col items-center space-y-2">
+                    <Skeleton class="w-16 h-16 rounded-full" />
+                    <Skeleton class="h-4 w-16" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Accords skeleton -->
+            <div class="space-y-4">
+              <Skeleton class="h-5 w-40" />
+              <div class="flex flex-wrap gap-3">
+                <Skeleton v-for="n in 5" :key="n" class="h-6 w-24 rounded-full" />
+              </div>
+            </div>
+
+            <!-- Details grid skeleton -->
+            <div class="grid grid-cols-2 gap-y-6 gap-x-12">
+              <div v-for="n in 4" :key="n" class="space-y-2">
+                <Skeleton class="h-4 w-24" />
+                <Skeleton class="h-5 w-32" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description skeleton -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-8">
+          <div class="space-y-4">
+            <Skeleton class="h-5 w-32" />
+            <Skeleton class="h-32 w-full" />
+          </div>
+          <div class="space-y-4 lg:border-l lg:border-border lg:pl-6">
+            <Skeleton class="h-5 w-32" />
+            <Skeleton class="h-32 w-full" />
+          </div>
         </div>
       </div>
 
       <div v-else-if="perfume" class="space-y-8">
         <!-- Breadcrumb -->
-        <div class="flex items-center space-x-2 text-sm text-muted-foreground">
-          <NuxtLink to="/" class="hover:text-primary transition-colors inline-flex items-center gap-1">
-            <Home class="w-4 h-4" />
-            Home
-          </NuxtLink>
-          <span>/</span>
-          <NuxtLink to="/perfumes" class="hover:text-primary transition-colors inline-flex items-center gap-1">
-            <Search class="w-4 h-4" />
-            Browse
-          </NuxtLink>
-          <span>/</span>
-          <span class="text-foreground">{{ perfume.name }}</span>
-        </div>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <NuxtLink to="/" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <!-- <Home class="w-4 h-4" /> -->
+                Home
+              </NuxtLink>
+            </BreadcrumbItem>
+            
+            <BreadcrumbSeparator />
+            
+            <BreadcrumbItem>
+              <NuxtLink to="/perfumes" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <!-- <Search class="w-4 h-4" /> -->
+                Browse
+              </NuxtLink>
+            </BreadcrumbItem>
+            
+            <BreadcrumbSeparator />
+            
+            <BreadcrumbItem>
+              <BreadcrumbPage class="text-sm">{{ perfume.name }}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <!-- Header Section -->
         <div class="mb-8">
-          <p class="text-sm uppercase tracking-wider text-muted-foreground mb-2">{{ perfume.brands?.name }}</p>
-          <h1 class="text-4xl font-light mb-2">{{ perfume.name }}</h1>
-          <p v-if="perfume.perfumer" class="text-sm text-muted-foreground">
-            By {{ perfume.perfumer }}
+          <p class="text-sm uppercase tracking-wider text-muted-foreground mb-2">{{ perfume.brands.name }}</p>
+          <h1 class="text-4xl font-light mb-2">
+            {{ perfume.name }} 
+            <span class="text-muted-foreground text-2xl">{{ perfume.concentration.name }}</span>
+          </h1>
+          <p v-if="perfume.perfumer.name" class="text-sm text-muted-foreground">
+            By {{ perfume.perfumer.name }}
           </p>
         </div>
 
@@ -225,7 +312,7 @@ onMounted(async () => {
             </div>
 
             <!-- Main Accords -->
-            <div v-if="perfume.main_accords?.length">
+            <!-- <div v-if="perfume.main_accords?.length">
               <h2 class="text-sm uppercase tracking-wider mb-6">Main Accords</h2>
               <div class="flex flex-wrap gap-3">
                 <Badge 
@@ -237,7 +324,7 @@ onMounted(async () => {
                   {{ String(accord).charAt(0).toUpperCase() + String(accord).slice(1) }}
                 </Badge>
               </div>
-            </div>
+            </div> -->
 
             <div class="grid grid-cols-2 gap-y-6 gap-x-12">
               <div v-if="perfume.category">
@@ -245,14 +332,14 @@ onMounted(async () => {
                   <Droplets class="w-3 h-3" />
                   Category
                 </p>
-                <p>{{ perfume.category }}</p>
+                <p>{{ capitalizeWords(perfume.category) }}</p>
               </div>
               <div v-if="perfume.gender">
                 <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
                   <User2 class="w-3 h-3" />
                   Gender
                 </p>
-                <p>{{ perfume.gender }}</p>
+                <p>{{ capitalizeWords(perfume.gender) }}</p>
               </div>
               <div v-if="perfume.release_year">
                 <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
@@ -266,14 +353,35 @@ onMounted(async () => {
                   <Clock class="w-3 h-3" />
                   Longevity
                 </p>
-                <p>{{ perfume.longevity }}</p>
+                <p>{{ capitalizeWords(perfume.longevity) }}</p>
               </div>
               <div v-if="perfume.sillage">
                 <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
                   <Wind class="w-3 h-3" />
                   Sillage
                 </p>
-                <p>{{ perfume.sillage }}</p>
+                <p>{{ capitalizeWords(perfume.sillage) }}</p>
+              </div>
+              <div v-if="perfume.country">
+                <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
+                  <MapPin class="w-3 h-3" />
+                  Country
+                </p>
+                <p>{{ perfume.country.name }}</p>
+              </div>
+              <div v-if="perfume.family">
+                <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
+                  <Flower2 class="w-3 h-3" />
+                  Family
+                </p>
+                <p>{{ perfume.family.name }}</p>
+              </div>
+              <div v-if="perfume.type">
+                <p class="text-xs uppercase text-muted-foreground mb-1 flex items-center gap-1">
+                  <Droplets class="w-3 h-3" />
+                  Type
+                </p>
+                <p>{{ perfume.type.name }}</p>
               </div>
             </div>
 
@@ -289,7 +397,7 @@ onMounted(async () => {
                   variant="outline"
                   class="capitalize"
                 >
-                  {{ occasion }}
+                  {{ capitalizeWords(occasion) }}
                 </Badge>
               </div>
 
@@ -311,7 +419,7 @@ onMounted(async () => {
                          Snowflake" 
                     class="w-3 h-3"
                   />
-                  {{ season }}
+                  {{ capitalizeWords(season) }}
                 </Badge>
               </div>
             </div>

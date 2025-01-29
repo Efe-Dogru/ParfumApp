@@ -1,6 +1,4 @@
-
-import type { Brand, Concentration, Perfume } from '~/types/api'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Brand, Concentration, Perfume, PerfumeDetails } from '~/types/perfume'
 
 interface PerfumeTagJoin {
     perfumes: Perfume
@@ -44,7 +42,7 @@ export const usePerfumes = () => {
             query = query.eq('concentration_id', filters.concentration_id)
         }
         if (filters.season && filters.season !== 'all') {
-            query = query.eq('season', filters.season)
+            query = query.contains('season', [filters.season])
         }
         return query
     }
@@ -56,10 +54,7 @@ export const usePerfumes = () => {
 
         // Apply text search if search is provided
         if (search.trim()) {
-            query = query.textSearch('name', `"${search}"`, {
-                type: 'websearch',
-                config: 'english'
-            })
+             query = query.ilike('name', `%${search}%`)
         }
 
         // Apply filters
@@ -106,14 +101,30 @@ export const usePerfumes = () => {
         const { data, error } = await client
             .from('perfumes')
             .select(`
-                *,
-                brands:brand_id(*)
+                id,
+                category,
+                description,
+                gender,
+                inspiration,
+                local_image_path,
+                longevity,
+                name,
+                country:country_id(name),
+                family:family_id(name),
+                type:type_id(name),
+                concentration:concentration_id(name),
+                perfumer:perfumer_id(name),
+                brands:brand_id(name),
+                occasion,
+                release_year,
+                season,
+                sillage
             `)
             .eq('id', id)
             .single()
 
         if (error) throw error
-        return data as Perfume
+        return data as PerfumeDetails
     }
 
     const getTrendingPerfumes = async (limit: number = 8) => {
