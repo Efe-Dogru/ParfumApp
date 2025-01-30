@@ -12,7 +12,7 @@ onMounted(() => {
 
 <template>
   <footer class="relative border-t bg-background text-foreground">
-    <div class="container mx-auto px-4 py-12 md:px-6 lg:px-8">
+    <div class="container py-12 px-4">
       <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
         <div class="relative">
           <h2 class="mb-4 text-3xl font-bold tracking-tight">Stay Connected</h2>

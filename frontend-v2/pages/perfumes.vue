@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { usePerfumes } from '@/composables/usePerfumes'
-import type { Perfume, Brand, Concentration } from '~/types/api'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import type { Perfume, Brand, Concentration } from '~/types/perfume'
 import { Button } from '@/components/ui/button'
 import {
   Pagination,
@@ -25,7 +17,6 @@ import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NuxtLink } from '#components'
 import Input from '@/components/ui/input/Input.vue'
-import ComboBox from '@/components/ui/custom/ComboBox.vue'
 
 // Define the directive at the top
 const vObserveVisibility = {
@@ -244,25 +235,25 @@ watch([selectedGender, selectedBrand, selectedCategory, selectedSeason], async (
           @input="handleSearch"
           class="w-full max-w-xs"
         />
-        <ComboBox
+        <CustomComboBox
           v-model="selectedGender"
           :items="genderOptions"
           placeholder="Gender"
           search-placeholder="Search genders..."
         />
-        <ComboBox
+        <CustomComboBox
           v-model="selectedCategory"
           :items="categoryOptions"
           placeholder="Category"
           search-placeholder="Search categories..."
         />
-        <ComboBox
+        <CustomComboBox
           v-model="selectedBrand"
           :items="brandOptions"
           placeholder="Brand"
           search-placeholder="Search brands..."
         />
-        <ComboBox
+        <CustomComboBox
           v-model="selectedSeason"
           :items="seasonOptions"
           placeholder="Season"
@@ -272,12 +263,14 @@ watch([selectedGender, selectedBrand, selectedCategory, selectedSeason], async (
       
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         <template v-if="loading">
-          <div v-for="n in itemsPerPage" :key="n" class="flex-none">
-            <div class="relative overflow-hidden rounded-lg aspect-square mb-3">
-              <Skeleton class="w-full h-full" />
+          <div v-for="n in itemsPerPage" :key="n" class="flex-none space-y-3">
+            <div class="relative overflow-hidden rounded-lg aspect-square">
+              <Skeleton class="w-full h-full absolute inset-0" />
             </div>
-            <Skeleton class="h-6 w-3/4 mb-2" />
-            <Skeleton class="h-4 w-1/2" />
+            <div class="space-y-2">
+              <Skeleton class="h-5 w-3/4" />
+              <Skeleton class="h-4 w-1/2" />
+            </div>
           </div>
         </template>
         <template v-else>

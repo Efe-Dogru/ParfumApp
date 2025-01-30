@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { usePerfumes } from '@/composables/usePerfumes'
-import HeroSection from '@/components/ui/custom/HeroSection.vue'
-import type { Perfume } from '~/types/api'
+import type { Perfume } from '~/types/perfume'
 import { useBucketImages } from '@/composables/useShared'
 import { ref, onMounted } from 'vue'
 import { NuxtLink } from '#components'
@@ -32,7 +31,7 @@ onMounted(async () => {
 </script>
 
 <template>
-        <HeroSection />
+        <CustomHeroSection />
         <div class="container mx-auto px-4 py-8 space-y-12">
             <!-- Trending Now Section -->
             <section>
