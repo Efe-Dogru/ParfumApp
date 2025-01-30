@@ -16,6 +16,7 @@ import {
 import { cn } from '@/utils'
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { ref, watch, computed } from 'vue'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface Item {
   value: string
@@ -93,25 +94,27 @@ watch(open, (newValue) => {
         <CommandEmpty>{{ emptyMessage || "No items found." }}</CommandEmpty>
         <CommandList>
           <CommandGroup>
-            <CommandItem
-              v-for="item in filteredItems"
-              :key="item.value"
-              :value="item.value"
-              @select="(ev) => {
-                if (typeof ev.detail.value === 'string') {
-                  value = ev.detail.value
-                }
-                open = false
-              }"
-            >
-              {{ item.label }}
-              <Check
-                :class="cn(
-                  'ml-auto h-4 w-4',
-                  value === item.value ? 'opacity-100' : 'opacity-0',
-                )"
-              />
-            </CommandItem>
+            <ScrollArea class="h-[200px] overflow-y-auto">
+              <CommandItem
+                v-for="item in filteredItems"
+                :key="item.value"
+                :value="item.value"
+                @select="(ev) => {
+                  if (typeof ev.detail.value === 'string') {
+                    value = ev.detail.value
+                  }
+                  open = false
+                }"
+              >
+                {{ item.label }}
+                <Check
+                  :class="cn(
+                    'ml-auto h-4 w-4',
+                    value === item.value ? 'opacity-100' : 'opacity-0',
+                  )"
+                />
+              </CommandItem>
+            </ScrollArea>
           </CommandGroup>
         </CommandList>
       </Command>
