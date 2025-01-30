@@ -1,22 +1,40 @@
-export interface PerfumeDetails{
+export interface Perfume {
     id: number
+    name: string
+    local_image_path: string
+    brands: Brand
+}
+
+export interface PerfumeDetails extends Perfume {
     category: string
     description: string
     gender: string
     inspiration: string
-    local_image_path: string
     longevity: string
-    name: string
     country: Country
     family: Family
     type: Type
     concentration: Concentration
     perfumer: Perfumer
-    brands: Brand
     occasion: string[]
     release_year: number
     season: string[]
     sillage: string
+    notes: {
+        note_id: number
+        note_type: 'top' | 'middle' | 'base'
+        notes: {
+            id: number
+            name: string
+            image_filename: string
+        }
+    }[]
+    accords: {
+        main_accords: {
+            id: number
+            name: string
+        }
+    }[]
 }
 
 export interface Country {
@@ -34,12 +52,6 @@ export interface Type {
     name: string
 }
 
-export interface Perfume {
-    id: number
-    name: string
-    local_image_path: string
-    brands: Brand
-}
 
 export interface Brand {
     id: number
@@ -52,10 +64,13 @@ export interface Perfumer {
 }
 
 export interface PerfumeNote {
-    perfume_id: number
     note_id: number
     note_type: 'top' | 'middle' | 'base'
-    note: Note
+    notes: {
+        id: number
+        name: string
+        image_filename?: string
+    }
 }
 
 export interface Concentration{

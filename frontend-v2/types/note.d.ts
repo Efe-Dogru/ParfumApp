@@ -4,6 +4,15 @@ export interface Note {
     image_filename: string
 }
 
+interface NoteMood {
+    id: number
+    name: string
+}
+
+interface NoteMoodRelation {
+    mood: NoteMood
+}
+
 export interface NoteDetails extends Note {
     family: NoteFamily
     description: string | null
@@ -11,4 +20,10 @@ export interface NoteDetails extends Note {
     cultural_significance: string | null
     normalized_name: string | null
     mood: string | null
+    moods: NoteMoodRelation[]
+}
+
+export interface NoteFamily {
+    id: number
+    name: string
 }

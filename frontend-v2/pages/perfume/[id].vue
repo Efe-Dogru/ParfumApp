@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { usePerfumes } from '@/composables/usePerfumes'
 import { useBucketImages } from '@/composables/useShared'
-import { useNotes } from '@/composables/useNotes'
-import type { PerfumeDetails, PerfumeNote } from '~/types/perfume'
+import type { PerfumeDetails } from '~/types/perfume'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,12 +17,11 @@ import {
 import { NuxtLink } from '#components'
 
 const route = useRoute()
-const { getPerfume } = usePerfumes()
-const { getPerfumeNotes } = useNotes()
+const { getPerfumeDetails } = usePerfumes()
 const perfume = ref<PerfumeDetails | null>(null)
 const imageUrl = ref<string>('')
 const loading = ref(true)
-const perfumeNotes = ref<PerfumeNote[]>([])
+const perfumeNotes = computed(() => perfume.value?.notes || [])
 
 // Helper function to capitalize words
 const capitalizeWords = (str: string) => {
@@ -33,20 +31,8 @@ const capitalizeWords = (str: string) => {
     .join(' ')
 }
 
-// Helper function to get accord class
-// const getAccordClass = (accordName: string) => {
-//   const classes = {
-//     // Woody & Earthy tones
-//     woody: 'bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100',
-//     earthy: 'bg-stone-200 dark:bg-stone-800 text-stone-900 dark:text-stone-100',
-//     // ... add more accord classes as needed
-//   }
-//   const key = accordName.toLowerCase() as keyof typeof classes
-//   return classes[key] || 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-// }
-
 // Helper function to filter notes by type
-const filterNotesByType = (notes: PerfumeNote[], type: 'top' | 'middle' | 'base') => {
+const filterNotesByType = (notes: PerfumeDetails['notes'], type: 'top' | 'middle' | 'base') => {
   return notes.filter(n => n.note_type === type)
 }
 
@@ -62,16 +48,15 @@ const noteImageUrls = ref<Record<string, string>>({})
 onMounted(async () => {
   try {
     const id = parseInt(route.params.id as string)
-    perfume.value = await getPerfume(id)
+    perfume.value = await getPerfumeDetails(id)
     if (perfume.value?.local_image_path) {
       imageUrl.value = await useBucketImages('perfume_images', perfume.value.local_image_path)
     }
-    perfumeNotes.value = await getPerfumeNotes(id)
     
     // Load all note images
-    for (const note of perfumeNotes.value) {
-      if (note.note.image_filename) {
-        noteImageUrls.value[note.note.id] = await getNoteImageUrl(note.note.image_filename) || ''
+    for (const note of perfume.value?.notes || []) {
+      if (note.notes.image_filename) {
+        noteImageUrls.value[note.note_id] = await getNoteImageUrl(note.notes.image_filename) || ''
       }
     }
   } catch (error) {
@@ -218,113 +203,116 @@ onMounted(async () => {
             <!-- Notes Pyramid -->
             <div class="space-y-8">
               <!-- Top Notes -->
-              <div v-if="filterNotesByType(perfumeNotes, 'top').length">
+              <div v-if="filterNotesByType(perfume.notes, 'top').length">
                 <h2 class="text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Sparkles class="w-4 h-4" />
                   Top Notes
                 </h2>
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
                   <div 
-                    v-for="note in filterNotesByType(perfumeNotes, 'top')" 
-                    :key="`${note.perfume_id}-${note.note_id}-${note.note_type}`"
+                    v-for="note in filterNotesByType(perfume.notes, 'top')" 
+                    :key="`${note.note_id}-${note.note_type}`"
                     class="flex flex-col items-center group"
                   >
                     <div 
                       class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all"
-                      :title="note.note.description || note.note.name"
+                      :title="note.notes.name"
                     >
                       <div class="w-full h-full flex items-center justify-center text-muted-foreground">
                         <img 
-                          v-if="note.note.image_filename && noteImageUrls[note.note.id]"
-                          :src="noteImageUrls[note.note.id]"
-                          :alt="note.note.name"
+                          v-if="note.notes.image_filename && noteImageUrls[note.note_id]"
+                          :src="noteImageUrls[note.note_id]"
+                          :alt="note.notes.name"
                           class="w-full h-full object-cover"
                         />
                         <Droplets v-else class="w-6 h-6" />
                       </div>
                     </div>
-                    <span class="text-sm text-center">{{ capitalizeWords(note.note.name) }}</span>
+                    <span class="text-sm text-center">{{ capitalizeWords(note.notes.name) }}</span>
                   </div>
                 </div>
               </div>
 
               <!-- Middle Notes -->
-              <div v-if="filterNotesByType(perfumeNotes, 'middle').length">
+              <div v-if="filterNotesByType(perfume.notes, 'middle').length">
                 <h2 class="text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Heart class="w-4 h-4" />
                   Middle Notes
                 </h2>
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
                   <div 
-                    v-for="note in filterNotesByType(perfumeNotes, 'middle')" 
-                    :key="`${note.perfume_id}-${note.note_id}-${note.note_type}`"
+                    v-for="note in filterNotesByType(perfume.notes, 'middle')" 
+                    :key="`${note.note_id}-${note.note_type}`"
                     class="flex flex-col items-center group"
                   >
                     <div 
                       class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all"
-                      :title="note.note.description || note.note.name"
+                      :title="note.notes.name"
                     >
                       <div class="w-full h-full flex items-center justify-center text-muted-foreground">
                         <img 
-                          v-if="note.note.image_filename && noteImageUrls[note.note.id]"
-                          :src="noteImageUrls[note.note.id]"
-                          :alt="note.note.name"
+                          v-if="note.notes.image_filename && noteImageUrls[note.note_id]"
+                          :src="noteImageUrls[note.note_id]"
+                          :alt="note.notes.name"
                           class="w-full h-full object-cover"
                         />
                         <Flower2 v-else class="w-6 h-6" />
                       </div>
                     </div>
-                    <span class="text-sm text-center">{{ capitalizeWords(note.note.name) }}</span>
+                    <span class="text-sm text-center">{{ capitalizeWords(note.notes.name) }}</span>
                   </div>
                 </div>
               </div>
 
               <!-- Base Notes -->
-              <div v-if="filterNotesByType(perfumeNotes, 'base').length">
+              <div v-if="filterNotesByType(perfume.notes, 'base').length">
                 <h2 class="text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Flame class="w-4 h-4" />
                   Base Notes
                 </h2>
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6">
                   <div 
-                    v-for="note in filterNotesByType(perfumeNotes, 'base')" 
-                    :key="`${note.perfume_id}-${note.note_id}-${note.note_type}`"
+                    v-for="note in filterNotesByType(perfume.notes, 'base')" 
+                    :key="`${note.note_id}-${note.note_type}`"
                     class="flex flex-col items-center group"
                   >
                     <div 
                       class="w-16 h-16 rounded-full bg-muted mb-2 overflow-hidden group-hover:scale-110 transition-all"
-                      :title="note.note.description || note.note.name"
+                      :title="note.notes.name"
                     >
                       <div class="w-full h-full flex items-center justify-center text-muted-foreground">
                         <img 
-                          v-if="note.note.image_filename && noteImageUrls[note.note.id]"
-                          :src="noteImageUrls[note.note.id]"
-                          :alt="note.note.name"
+                          v-if="note.notes.image_filename && noteImageUrls[note.note_id]"
+                          :src="noteImageUrls[note.note_id]"
+                          :alt="note.notes.name"
                           class="w-full h-full object-cover"
                         />
                         <GlassWater v-else class="w-6 h-6" />
                       </div>
                     </div>
-                    <span class="text-sm text-center">{{ capitalizeWords(note.note.name) }}</span>
+                    <span class="text-sm text-center">{{ capitalizeWords(note.notes.name) }}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Main Accords -->
-            <!-- <div v-if="perfume.main_accords?.length">
-              <h2 class="text-sm uppercase tracking-wider mb-6">Main Accords</h2>
+            <div v-if="perfume.accords?.length">
+              <h2 class="text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Droplets class="w-4 h-4" />
+                Main Accords
+              </h2>
               <div class="flex flex-wrap gap-3">
                 <Badge 
-                  v-for="(accord, index) in perfume.main_accords" 
-                  :key="index"
+                  v-for="accord in perfume.accords" 
+                  :key="accord.main_accords.id"
                   variant="secondary"
-                  :class="getAccordClass(String(accord))"
+                  class="text-sm border border-secondary-600 bg-secondary/10 px-6 text-black dark:text-white dark:bg-secondary-600"
                 >
-                  {{ String(accord).charAt(0).toUpperCase() + String(accord).slice(1) }}
+                  {{ capitalizeWords(accord.main_accords.name) }}
                 </Badge>
               </div>
-            </div> -->
+            </div>
 
             <div class="grid grid-cols-2 gap-y-6 gap-x-12">
               <div v-if="perfume.category">

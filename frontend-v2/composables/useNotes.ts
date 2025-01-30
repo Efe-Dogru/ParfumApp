@@ -1,5 +1,4 @@
-import type { Note } from '~/types/note'
-import type { PerfumeNote } from '~/types/api'
+import type { Note, NoteDetails } from '@/types/note'
 
 export const useNotes = () => {
     const client = useSupabaseClient()
@@ -55,31 +54,35 @@ export const useNotes = () => {
         return data
     }
 
-    const getPerfumeNotes = async (perfumeId: number): Promise<PerfumeNote[]> => {
-        const { data: perfumeNotes, error } = await client
-            .from('perfume_notes')
+    const getNoteDetails = async (id: number) => {
+        const { data, error } = await client
+            .from('notes')
             .select(`
-                note_type,
-                note:notes (
-                    id,
-                    name,
-                    image_filename
+                id,
+                name,
+                image_filename,
+                description,
+                family:family_id(name),
+                source,
+                cultural_significance,
+                moods:note_mood_relations(
+                    mood:mood_id(
+                        id,
+                        name
+                    )
                 )
             `)
-            .eq('perfume_id', perfumeId)
+            .eq('id', id)
+            .single()
 
-        if (error) {
-            console.error('Error fetching perfume notes:', error)
-            return []
-        }
-
-        return perfumeNotes as PerfumeNote[]
+        if (error) throw error
+        return data as NoteDetails
     }
 
     return {
         getNotes,
-        getPerfumeNotes,
         searchNotes,
-        getNoteFamilies
+        getNoteFamilies,
+        getNoteDetails
     }
 } 
