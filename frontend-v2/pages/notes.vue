@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NuxtLink } from '#components'
 import Input from '@/components/ui/input/Input.vue'
-import { ref, onMounted, watch, onUnmounted } from 'vue'
+import { ref, onMounted, watch, onUnmounted, computed } from 'vue'
 import { useBucketImages } from '@/composables/useShared'
 import {
   Pagination,
@@ -17,6 +17,8 @@ import {
   PaginationNext,
   PaginationPrev,
 } from '@/components/ui/pagination'
+import { XIcon, FilterIcon } from 'lucide-vue-next'
+import { Badge } from '@/components/ui/badge'
 
 // Define the directive
 const vObserveVisibility = {
@@ -177,30 +179,119 @@ watch([selectedFamily], async () => {
   currentPage.value = 1
   await fetchNotes(1)
 })
+
+// Add computed property for active filters
+const activeFilters = computed(() => {
+  const filters = []
+  
+  if (selectedFamily.value && selectedFamily.value !== 'all') {
+    filters.push({
+      type: 'family',
+      value: selectedFamily.value,
+      label: familyOptions.value.find(opt => opt.value === selectedFamily.value)?.label
+    })
+  }
+  
+  if (selectedMood.value && selectedMood.value !== 'all') {
+    filters.push({
+      type: 'mood',
+      value: selectedMood.value,
+      label: moodOptions.find(opt => opt.value === selectedMood.value)?.label
+    })
+  }
+
+  return filters
+})
+
+const removeFilter = (filterType: string) => {
+  switch (filterType) {
+    case 'family':
+      selectedFamily.value = 'all'
+      break
+    case 'mood':
+      selectedMood.value = 'all'
+      break
+  }
+}
+
+const clearAllFilters = () => {
+  selectedFamily.value = 'all'
+  selectedMood.value = 'all'
+  searchQuery.value = ''
+}
 </script>
 
 <template>
   <div class="container mx-auto px-4">
     <!-- Search and filters section -->
-    <div class="flex flex-wrap items-center gap-4 mb-4">
-      <Input 
-        v-model="searchQuery"
-        placeholder="Search notes..."
-        @input="handleSearch"
-        class="w-full max-w-xs"
-      />
-      <CustomComboBox
-        v-model="selectedFamily"
-        :items="familyOptions"
-        placeholder="Family"
-        search-placeholder="Search families..."
-      />
-      <CustomComboBox
-        v-model="selectedMood"
-        :items="moodOptions"
-        placeholder="Mood"
-        search-placeholder="Search moods..."
-      />
+    <div class="space-y-4">
+      <div class="flex flex-wrap items-center gap-4">
+        <Input 
+          v-model="searchQuery"
+          placeholder="Search notes..."
+          @input="handleSearch"
+          class="w-full max-w-xs"
+        />
+        <CustomComboBox
+          v-model="selectedFamily"
+          :items="familyOptions"
+          placeholder="Family"
+          search-placeholder="Search families..."
+        />
+        <CustomComboBox
+          v-model="selectedMood"
+          :items="moodOptions"
+          placeholder="Mood"
+          search-placeholder="Search moods..."
+        />
+      </div>
+
+      <!-- Active filters and Clear All -->
+      <div v-if="activeFilters.length > 0 || searchQuery" class="flex flex-wrap items-center gap-4">
+        <div class="flex flex-wrap gap-2">
+          <Badge 
+            variant="destructive"
+            class="flex items-center gap-1 px-3 py-1 cursor-pointer"
+            @click="clearAllFilters"
+          >
+            Clear All
+            <XIcon class="h-3 w-3" />
+          </Badge>
+          <Badge 
+            v-for="filter in activeFilters" 
+            :key="filter.type"
+            variant="secondary"
+            class="flex items-center gap-1 px-3 py-1"
+          >
+            {{ filter.label }}
+            <button 
+              @click="removeFilter(filter.type)"
+              class="ml-1 hover:text-destructive"
+            >
+              <XIcon class="h-3 w-3" />
+            </button>
+          </Badge>
+          <Badge
+            v-if="searchQuery"
+            variant="secondary"
+            class="flex items-center gap-1 px-3 py-1"
+          >
+            Search: {{ searchQuery }}
+            <button 
+              @click="searchQuery = ''"
+              class="ml-1 hover:text-destructive"
+            >
+              <XIcon class="h-3 w-3" />
+            </button>
+          </Badge>
+        </div>
+      </div>
+
+      <!-- Filter icon separator -->
+      <div class="flex items-center gap-2 py-4">
+        <FilterIcon class="h-5 w-5 text-muted-foreground" />
+        <div class="h-px flex-1 bg-border"></div>
+      </div>
     </div>
     
     <!-- Notes grid -->
