@@ -8,6 +8,20 @@ import { ref, onMounted } from 'vue'
 import { NuxtLink } from '#components'
 import { Skeleton } from '@/components/ui/skeleton'
 import Carousel from '@/components/ui/custom/Carousel.vue'
+import AnimatedLogoCloud from '@/components/ui/custom/AnimatedLogoCloud.vue'
+
+// Import brand logos
+import ChanelLogo from '~/assets/images/Chanel.png'
+import DiorLogo from '~/assets/images/Dior.png'
+import BvlgariLogo from '~/assets/images/Bvlgari.png'
+import HermesLogo from '~/assets/images/Hermes.png'
+import TomFordLogo from '~/assets/images/TomFord.png'
+import VersaceLogo from '~/assets/images/Versace.png'
+import PradaLogo from '~/assets/images/Prada.png'
+import GivenchyLogo from '~/assets/images/Givenchy.png'
+import ValentinoLogo from '~/assets/images/Valentino.png'
+import YSLLogo from '~/assets/images/YvesSaintLaurent.png'
+import AzzaroLogo from '~/assets/images/Azzaro.png'
 
 const { getTrendingPerfumes, getTopRatedPerfumes, getMostLovedPerfumes } = usePerfumes()
 
@@ -33,6 +47,53 @@ const hasMore = ref({
     topRated: true,
     mostLoved: true
 })
+
+const brandLogos = ref([
+  {
+    name: 'Chanel',
+    path: ChanelLogo
+  },
+  {
+    name: 'Dior',
+    path: DiorLogo
+  },
+  {
+    name: 'Bvlgari',
+    path: BvlgariLogo
+  },
+  {
+    name: 'Hermes',
+    path: HermesLogo
+  },
+  {
+    name: 'Tom Ford',
+    path: TomFordLogo
+  },
+  {
+    name: 'Versace',
+    path: VersaceLogo
+  },
+  {
+    name: 'Prada',
+    path: PradaLogo
+  },
+  {
+    name: 'Givenchy',
+    path: GivenchyLogo
+  },
+  {
+    name: 'Valentino',
+    path: ValentinoLogo
+  },
+  {
+    name: 'YSL',
+    path: YSLLogo
+  },
+  {
+    name: 'Azzaro',
+    path: AzzaroLogo
+  }
+])
 
 const loadMore = async (section: 'trending' | 'topRated' | 'mostLoved') => {
     if (loading.value[section] || !hasMore.value[section]) return
@@ -230,6 +291,14 @@ onMounted(async () => {
                     </div>
                 </template>
             </div>
+        </section>
+        <section class="py-8">
+            <AnimatedLogoCloud
+                :logos="brandLogos"
+                title="Trusted by Luxury Brands"
+                class="opacity-75"
+            />
+            
         </section>
     </div>
 </template>

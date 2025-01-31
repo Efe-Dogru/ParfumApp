@@ -79,5 +79,5 @@
 
 @font-face {
   font-family: 'Afterglow-Regular';
-  src: url('~assets/fonts/Afterglow-Regular.otf')  format('opentype'),
+  src: url('/assets/fonts/Afterglow-Regular.tff')  format('opentype'),
 }

@@ -1,14 +1,14 @@
 <template>
-  <section class="relative min-h-[95vh] w-full bg-gradient-to-bl from-primary-200 via-primary-600 to-primary-950 overflow-hidden">
+  <section class="relative min-h-[90vh] md:min-h-[80vh] lg:min-h-[95vh] 2xl:min-h-[90vh] w-full bg-gradient-to-bl from-primary-200 via-primary-600 to-primary-950 overflow-hidden">
     <!-- Wave Background -->
     <div class="absolute inset-0 z-0">
       <div class="wave wave1"></div>
       <div class="wave wave2"></div>
       <div class="wave wave3"></div>
     </div>
-    <div class="container mx-auto px-4 py-20 min-h-[95vh] relative z-10">
+    <div class="container mx-auto px-4 py-12 lg:py-20 min-h-[90vh] md:min-h-[80vh] lg:min-h-[95vh] 2xl:min-h-[92vh] relative z-10">
       <!-- Left Column - Stats -->
-      <div class="absolute -left-24 bottom-32 max-w-xs">
+      <div class="absolute -left-24 bottom-48 max-w-xs hidden lg:block 2xl:bottom-32">
         <div class="max-w-md">
           <div class="border-l-2 border-secondary pl-4 mb-12">
             <p class="text-white/70 text-md">
@@ -44,10 +44,11 @@
 
         <!-- Advanced Search Bar -->
         <div class="relative max-w-3xl mx-auto p-[2px] rounded-lg mb-8">
-          <div class="bg-primary-700 flex items-center border-2 border-secondary/30 max-w-4xl mx-auto rounded-lg divide-x divide-gray-600">
+          <!-- Desktop View -->
+          <div class="hidden md:hidden lg:flex items-center border-2 border-secondary/30 max-w-4xl mx-auto rounded-lg divide-x divide-gray-600 bg-gradient-to-r from-primary-800 via-primary-700 to-primary-800">
             <!-- Search Input -->
             <div class="flex-1 min-w-[200px] px-2 py-2">
-              <Command class="rounded-lg border-0 shadow-none bg-primary-700">
+              <Command class="rounded-lg border-0 shadow-none bg-transparent">
                   <CommandInput class="h-10 text-white placeholder:text-gray-400 border-0" placeholder="Search perfumes..." />
               </Command>
             </div>
@@ -59,7 +60,7 @@
                 :items="brands"
                 placeholder="Select brands..."
                 searchPlaceholder="Search brands..."
-                class="bg-primary-700 text-white"
+                class="bg-transparent text-white"
               />
             </div>
 
@@ -70,17 +71,55 @@
                 :items="notes"
                 placeholder="Select notes..."
                 searchPlaceholder="Search notes..."
-                class="bg-primary-700 text-white"
+                class="bg-transparent text-white"
               />
             </div>
 
             <!-- Search Button -->
             <div class="px-2 py-2">
-              <Button variant="secondary" >
+              <Button  class="bg-gradient-to-r from-secondary via-secondary-400 to-secondary text-black">
                 Search
               </Button>
             </div>
+          </div>
 
+          <!-- Mobile/Tablet View -->
+          <div class="lg:hidden">
+            <div class=" bg-gradient-to-r from-primary-800 via-primary-700 to-primary-800 border-2 border-secondary/30 rounded-lg shadow-lg p-4 space-y-3 max-w-md mx-auto">
+              <!-- Search Input -->
+              <div class="w-full">
+                <Command class="rounded-lg border-0 shadow-none bg-transparent">
+                  <CommandInput class="h-11 text-white placeholder:text-gray-400" placeholder="Search perfumes..." />
+                </Command>
+              </div>
+
+              <!-- Brands MultiComboBox -->
+              <div class="w-full">
+                <MultiComboBox
+                  v-model="selectedBrands"
+                  :items="brands"
+                  placeholder="Select brands..."
+                  searchPlaceholder="Search brands..."
+                  class="bg-transparent border border-secondary/30 rounded-lg text-white"
+                />
+              </div>
+
+              <!-- Notes MultiComboBox -->
+              <div class="w-full">
+                <MultiComboBox
+                  v-model="selectedNotes"
+                  :items="notes"
+                  placeholder="Select notes..."
+                  searchPlaceholder="Search notes..."
+                  class="bg-transparent border border-secondary/30 rounded-lg text-white"
+                />
+              </div>
+
+              <!-- Search Button -->
+              <Button  class="w-full py-2.5 rounded-lg bg-gradient-to-r from-secondary via-secondary-400 to-secondary text-black">
+                Search
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -91,6 +130,18 @@
             Browse all!
           </Button>
           <div class="w-24 h-[1px] bg-gradient-to-l from-transparent via-secondary to-secondary"></div>
+        </div>
+
+        <!-- Mobile and Tablet Stats -->
+        <div class="lg:hidden mt-12 flex justify-center gap-12">
+          <div class="text-center">
+            <h3 class="text-4xl font-afterglow text-secondary mb-1">200<span class="text-secondary-300">+</span></h3>
+            <p class="text-white/80 text-sm">Perfumes</p>
+          </div>
+          <div class="text-center">
+            <h3 class="text-4xl font-afterglow text-secondary mb-1">15M<span class="text-secondary-300">+</span></h3>
+            <p class="text-white/80 text-sm">Customers</p>
+          </div>
         </div>
       </div>
     </div>

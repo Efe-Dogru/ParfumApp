@@ -94,7 +94,7 @@ const removeItem = (value: string) => {
       <Button
         role="combobox"
         :aria-expanded="open"
-        class="w-full justify-between relative min-h-[40px] bg-primary-700 text-white"
+        class="w-full justify-between relative min-h-[40px] bg-primary-800/0 text-white"
       >
         <div class="flex flex-wrap gap-1 items-center">
           <template v-if="selectedValues.length > 0">

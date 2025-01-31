@@ -48,3 +48,12 @@ export interface Concentration{
     id: number
     name: string
 }
+
+export interface AnimateLogoCloudProps {
+    logos: Array<{
+        name: string;
+        path: string;
+    }>;
+    title?: string;
+    class?: string;
+}
